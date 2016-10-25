@@ -1,0 +1,17 @@
+.\build\mmcsd_core.o: ..\..\components\drivers\sdio\mmcsd_core.c
+.\build\mmcsd_core.o: ..\..\include\rtthread.h
+.\build\mmcsd_core.o: .\rtconfig.h
+.\build\mmcsd_core.o: ..\..\include\rtdebug.h
+.\build\mmcsd_core.o: ..\..\include\rtdef.h
+.\build\mmcsd_core.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\mmcsd_core.o: ..\..\include\rtservice.h
+.\build\mmcsd_core.o: ..\..\include\rtm.h
+.\build\mmcsd_core.o: ..\..\include\rtthread.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/mmcsd_core.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/mmcsd_host.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/mmcsd_card.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/mmcsd_cmd.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/sd.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/mmc.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/sdio.h
+.\build\mmcsd_core.o: ..\..\components\drivers\include\drivers/sdio_func_ids.h

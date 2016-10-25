@@ -1,0 +1,9 @@
+.\build\console.o: ..\..\components\dfs\filesystems\devfs\console.c
+.\build\console.o: ..\..\include\rtthread.h
+.\build\console.o: .\rtconfig.h
+.\build\console.o: ..\..\include\rtdebug.h
+.\build\console.o: ..\..\include\rtdef.h
+.\build\console.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\console.o: ..\..\include\rtservice.h
+.\build\console.o: ..\..\include\rtm.h
+.\build\console.o: ..\..\include\rtthread.h

@@ -1,0 +1,16 @@
+.\build\block_dev.o: ..\..\components\drivers\sdio\block_dev.c
+.\build\block_dev.o: ..\..\include\rtthread.h
+.\build\block_dev.o: .\rtconfig.h
+.\build\block_dev.o: ..\..\include\rtdebug.h
+.\build\block_dev.o: ..\..\include\rtdef.h
+.\build\block_dev.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\block_dev.o: ..\..\include\rtservice.h
+.\build\block_dev.o: ..\..\include\rtm.h
+.\build\block_dev.o: ..\..\include\rtthread.h
+.\build\block_dev.o: ..\..\components\dfs\include\dfs_fs.h
+.\build\block_dev.o: ..\..\components\dfs\include\dfs_def.h
+.\build\block_dev.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+.\build\block_dev.o: ..\..\components\drivers\include\drivers/mmcsd_core.h
+.\build\block_dev.o: ..\..\components\drivers\include\drivers/mmcsd_host.h
+.\build\block_dev.o: ..\..\components\drivers\include\drivers/mmcsd_card.h
+.\build\block_dev.o: ..\..\components\drivers\include\drivers/mmcsd_cmd.h

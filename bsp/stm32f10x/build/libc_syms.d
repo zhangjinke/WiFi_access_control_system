@@ -1,0 +1,14 @@
+.\build\libc_syms.o: ..\..\components\libc\armlibc\libc_syms.c
+.\build\libc_syms.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+.\build\libc_syms.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdlib.h
+.\build\libc_syms.o: C:\Keil\ARM\ARMCC\Bin\..\include\string.h
+.\build\libc_syms.o: C:\Keil\ARM\ARMCC\Bin\..\include\ctype.h
+.\build\libc_syms.o: C:\Keil\ARM\ARMCC\Bin\..\include\time.h
+.\build\libc_syms.o: ..\..\include\rtm.h
+.\build\libc_syms.o: ..\..\include\rtdef.h
+.\build\libc_syms.o: .\rtconfig.h
+.\build\libc_syms.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\libc_syms.o: ..\..\include\rtthread.h
+.\build\libc_syms.o: ..\..\include\rtdebug.h
+.\build\libc_syms.o: ..\..\include\rtservice.h
+.\build\libc_syms.o: ..\..\include\rtm.h

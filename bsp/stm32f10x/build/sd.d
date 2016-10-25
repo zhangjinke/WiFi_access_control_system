@@ -1,0 +1,14 @@
+.\build\sd.o: ..\..\components\drivers\sdio\sd.c
+.\build\sd.o: ..\..\components\drivers\include\drivers/mmcsd_core.h
+.\build\sd.o: ..\..\include\rtthread.h
+.\build\sd.o: .\rtconfig.h
+.\build\sd.o: ..\..\include\rtdebug.h
+.\build\sd.o: ..\..\include\rtdef.h
+.\build\sd.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\sd.o: ..\..\include\rtservice.h
+.\build\sd.o: ..\..\include\rtm.h
+.\build\sd.o: ..\..\include\rtthread.h
+.\build\sd.o: ..\..\components\drivers\include\drivers/mmcsd_host.h
+.\build\sd.o: ..\..\components\drivers\include\drivers/mmcsd_card.h
+.\build\sd.o: ..\..\components\drivers\include\drivers/mmcsd_cmd.h
+.\build\sd.o: ..\..\components\drivers\include\drivers/sd.h

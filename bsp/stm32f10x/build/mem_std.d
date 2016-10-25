@@ -1,0 +1,9 @@
+.\build\mem_std.o: ..\..\components\libc\armlibc\mem_std.c
+.\build\mem_std.o: ..\..\include\rtthread.h
+.\build\mem_std.o: .\rtconfig.h
+.\build\mem_std.o: ..\..\include\rtdebug.h
+.\build\mem_std.o: ..\..\include\rtdef.h
+.\build\mem_std.o: C:\Keil\ARM\ARMCC\Bin\..\include\stdarg.h
+.\build\mem_std.o: ..\..\include\rtservice.h
+.\build\mem_std.o: ..\..\include\rtm.h
+.\build\mem_std.o: ..\..\include\rtthread.h
