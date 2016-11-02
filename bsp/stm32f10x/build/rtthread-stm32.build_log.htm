@@ -27,17 +27,25 @@ Project File Date:  11/02/2016
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 1 (build 61)', folder: 'C:\Keil\ARM\ARMCC\Bin'
 Build target 'rtthread-stm32'
+compiling wifi_thread.c...
 compiling rtc_thread.c...
+compiling esp8266.c...
+HardWare\ESP8266\esp8266.c(109): warning:  #177-D: variable "GPIO_InitStructure" was declared but never referenced
+  	GPIO_InitTypeDef  GPIO_InitStructure;
+HardWare\ESP8266\esp8266.c(21): warning:  #177-D: variable "counter" was declared but never referenced
+  static u32 counter = 0x01;
+HardWare\ESP8266\esp8266.c: 2 warnings, 0 errors
+compiling main.c...
 linking...
-Program Size: Code=148444 RO-data=13324 RW-data=708 ZI-data=40668  
-".\build\rtthread-stm32.axf" - 0 Error(s), 0 Warning(s).
+Program Size: Code=149424 RO-data=13324 RW-data=712 ZI-data=41720  
+".\build\rtthread-stm32.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
   D:\项目-比赛\创新团队\2016 WiFi门禁\WiFi_access_control_system\bsp\stm32f10x\RTE
   C:\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0\Device\Include
 
 <h2>Collection of Component Files used:</h2>
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

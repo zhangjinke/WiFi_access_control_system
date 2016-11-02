@@ -29,12 +29,14 @@ struct rt_thread wifi_thread; 	//Ïß³Ì¿ØÖÆ¿é
 *******************************************************************************/
 void wifi_thread_entry(void* parameter)
 {
+//	rt_thread_delayMs(500);
 	init_esp8266();
+//	check_state_line();
+	WriteTest();
 	while(1)
 	{
-		WriteTest();
-		rt_thread_delayMs(10);
-		ReadTest();
-		rt_thread_delayMs(10);
+		rt_thread_delayMs(5000);
+//		ReadTest();
+//		rt_thread_delayMs(10);
 	}	
 }
