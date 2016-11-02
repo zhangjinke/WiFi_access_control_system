@@ -53,15 +53,15 @@ void rtc_thread_entry(void* parameter)
 	while(1)
 	{
 		DS1307_ReadWrite_Time(1);
-		rt_kprintf("20%02d-%02d-%02d %02d-%02d-%02d weed: %d\r\n", TimeValue.year, TimeValue.month, 
-					TimeValue.date, TimeValue.hour, TimeValue.minute, TimeValue.second, TimeValue.week);
+//		rt_kprintf("20%02d-%02d-%02d %02d-%02d-%02d weed: %d\r\n", TimeValue.year, TimeValue.month, 
+//					TimeValue.date, TimeValue.hour, TimeValue.minute, TimeValue.second, TimeValue.week);
 		rt_thread_delayMs(1000);
 	}	
 }
 
 /*******************************************************************************
 * 函数名 	: set_time
-* 描述   	: 设置时间
+* 描述   	: 设置系统时间
 * 输入     	: - 年月日时分秒星期
 * 输出     	: None
 * 返回值    : None
@@ -78,4 +78,27 @@ void set_time(u8 year, u8 month, u8 date, u8 hour, u8 minute, u8 second, u8 week
 	DS1307_Time_Init(&TimeValue);
 }
 FINSH_FUNCTION_EXPORT(set_time, set time and date)
+
+/*******************************************************************************
+* 函数名 	: get_time
+* 描述   	: 获取系统时间
+* 输入     	: - 年月日时分秒星期
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+void get_time(void)
+{
+	if(DS1307_Check() == 0)
+	{
+		DS1307_ReadWrite_Time(1);
+		rt_kprintf("20%02d-%02d-%02d %02d-%02d-%02d weed: %d\r\n", TimeValue.year, TimeValue.month, 
+					TimeValue.date, TimeValue.hour, TimeValue.minute, TimeValue.second, TimeValue.week);
+	}
+	else
+	{
+		rt_kprintf("init ds1307 failed!\r\n");
+	}
+	
+}
+FINSH_FUNCTION_EXPORT(get_time, get system time and date)
 
