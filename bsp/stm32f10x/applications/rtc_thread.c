@@ -88,17 +88,8 @@ FINSH_FUNCTION_EXPORT(set_time, set time and date)
 *******************************************************************************/
 void get_time(void)
 {
-	if(DS1307_Check() == 0)
-	{
-		DS1307_ReadWrite_Time(1);
-		rt_kprintf("20%02d-%02d-%02d %02d-%02d-%02d weed: %d\r\n", TimeValue.year, TimeValue.month, 
-					TimeValue.date, TimeValue.hour, TimeValue.minute, TimeValue.second, TimeValue.week);
-	}
-	else
-	{
-		rt_kprintf("init ds1307 failed!\r\n");
-	}
-	
+	rt_kprintf("20%02d-%02d-%02d %02d-%02d-%02d weed: %d\r\n", TimeValue.year, TimeValue.month, 
+				TimeValue.date, TimeValue.hour, TimeValue.minute, TimeValue.second, TimeValue.week);
 }
 FINSH_FUNCTION_EXPORT(get_time, get system time and date)
 

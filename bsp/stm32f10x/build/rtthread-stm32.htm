@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\build\rtthread-stm32.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\build\rtthread-stm32.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Wed Nov 02 21:29:31 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Wed Nov 02 21:46:53 2016
 <BR><P>
 <H3>Maximum Stack Usage =        824 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -450,12 +450,10 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> rtc_thread.o(FSymTab)
 </UL>
-<P><STRONG><a name="[b5]"></a>get_time</STRONG> (Thumb, 62 bytes, Stack size 24 bytes, rtc_thread.o(.text))
+<P><STRONG><a name="[b5]"></a>get_time</STRONG> (Thumb, 42 bytes, Stack size 24 bytes, rtc_thread.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 200<LI>Call Chain = get_time &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DS1307_ReadWrite_Time
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DS1307_Check
-<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
+<BR>[Calls]<UL><LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> rtc_thread.o(FSymTab)
 </UL>
@@ -1193,8 +1191,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DS1307_Operate_Register
 </UL>
-<BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_time
-<LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rtc_thread_entry
+<BR>[Called By]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rtc_thread_entry
 </UL>
 
 <P><STRONG><a name="[f0]"></a>DS1307_Check</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, ds1307.o(.text))
@@ -1202,8 +1199,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DS1307_Read_Byte
 </UL>
-<BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_time
-<LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rtc_thread_entry
+<BR>[Called By]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rtc_thread_entry
 </UL>
 
 <P><STRONG><a name="[172]"></a>DS1307_RAM_Write_Data</STRONG> (Thumb, 80 bytes, Stack size 24 bytes, ds1307.o(.text), UNUSED)
