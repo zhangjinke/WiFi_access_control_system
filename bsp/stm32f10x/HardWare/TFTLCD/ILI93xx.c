@@ -2663,7 +2663,7 @@ void TFTLCD_Init(void)
 	}		 
 	LCD_Display_Dir(1);		//EMWIN实验默认设置为横屏
 	set_lcd_led(1, 250);	//点亮门内液晶背光
-	LCD_Clear(GREEN);
+	LCD_Clear(BLACK);		//显示全黑
 }  
 //清屏函数
 //color:要清屏的填充色

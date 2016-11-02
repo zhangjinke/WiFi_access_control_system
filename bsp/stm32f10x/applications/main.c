@@ -143,6 +143,9 @@ void user_init_thread_entry(void* parameter)
 #ifdef  TFT
 	/* ≥ı ºªØTFT“∫æß */
 	TFTLCD_Init();
+	POINT_COLOR = WHITE;
+	BACK_COLOR = BLACK;
+	LCD_ShowString(0,0,320,16,16,(u8 *)"WiFi Access Control System");
 #endif  /* TFT */
 
 #ifdef  TOUCH_SCREEN
