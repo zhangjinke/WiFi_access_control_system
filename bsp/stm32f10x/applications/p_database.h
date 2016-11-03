@@ -19,7 +19,7 @@
 #include <sys.h>
 
 /* 打印调试信息 */
-#define printDebugInfo
+//#define printDebugInfo
 /* 最大用户总量 */
 #define MAX_USER_NUM		1000
 /* header大小 */

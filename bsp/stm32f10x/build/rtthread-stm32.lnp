@@ -1,5 +1,6 @@
 --cpu Cortex-M3
 ".\build\application.o"
+".\build\att_database.o"
 ".\build\device_config.o"
 ".\build\main.o"
 ".\build\p_database.o"
