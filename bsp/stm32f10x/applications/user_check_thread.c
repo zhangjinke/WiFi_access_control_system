@@ -88,7 +88,7 @@ void user_check_thread_entry(void* parameter)
 					/* 判断是否是超级管理员 */
 					if ((user_info_struct_get.authority[15]&(1 << 7)) == (1 << 7) )
 					{//最高位为1则为超级管理员，直接开门
-						rt_kprintf("\r\n欢迎光临，超级管理员！\r\n");
+						rt_kprintf("\r\n超级管理员%s，欢迎光临，\r\n", user_info_struct_get.name);
 						/* 开锁 */
 						open_door();
 						continue;

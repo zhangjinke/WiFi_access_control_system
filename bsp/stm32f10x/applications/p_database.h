@@ -19,9 +19,11 @@
 #include <sys.h>
 
 /* 打印调试信息 */
-//#define printDebugInfo
+#define printDebugInfo
 /* 最大用户总量 */
 #define MAX_USER_NUM		1000
+/* header大小 */
+#define HEADER_SIZE			8
 
 #define GET_USER			0	//获取用户
 #define SET_USER			1	//设置用户
@@ -34,28 +36,25 @@
 #define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
 #define MEMBER_SIZE(Type, member) sizeof(((struct Type*)0)->member)
 
-/*用户号	激活状态	卡号	学号	姓名	权限	进出状态	有效期	指纹特征值
-2字节	1字节	4字节	6字节	8字节	16字节	16字节	7字节	193*5字节
-1-1000	0:失效 1:有效	11个数字(前补0)	右边补0x00	每一位对应一个门(最多128个门)	每一位对应一个门0:门内 1:门外	年月日时分秒	最多5个指纹	*/
-
-__packed struct user_info //总1040字节
+__packed struct user_info //总1050字节
 {
-	u16 user_id;		// 4-5			//用户号
-	u32 card_id;		// 6-9			//卡号
-	u8 effective;		// 10			//激活状态 0:失效 1:有效
-	u8 student_id[16];	// 11-26		//学号 11个数字(前补0)
-	u8 name[8];			// 27-34		//姓名 右边补0x00
-	u8 authority[16];	// 35-50		//权限
-	u8 state[16];		// 51-66		//进出状态
-	u8 is_time_limit;	// 67			//是否有时间限制 0:无限制 1:有限制
-	u16 year;			// 68-69		//年(有效期，超过之后用户失效)
-	u8 month;			// 70			//月
-	u8 day;				// 71			//日
-	u8 hour;			// 72			//时
-	u8 minutes;			// 73			//分
-	u8 second;			// 74			//秒
-	u8 finger[5][193];	// 75-1039		//指纹特征值
-	u32 crc;			// 1040-1043	//本成员之前所有成员按字节计算的CRC值
+	u16 user_id;		// 0-1			//用户号
+	u32 card_id;		// 2-5			//卡号
+	u8 effective;		// 6			//激活状态 0:失效 1:有效
+	u8 student_id[16];	// 7-22			//学号 11个数字(前补0)
+	u8 name[8];			// 23-30		//姓名 右边补0x00
+	u8 authority[16];	// 31-46		//权限
+	u8 state[16];		// 47-62		//进出状态
+	u8 is_time_limit;	// 63			//是否有时间限制 0:无限制 1:有限制
+	u16 year;			// 64-65		//年(有效期，超过之后用户失效)
+	u8 month;			// 66			//月
+	u8 day;				// 67			//日
+	u8 hour;			// 68			//时
+	u8 minutes;			// 69			//分
+	u8 second;			// 70			//秒
+	u16 finger_index[5];// 71-80		//指纹特征值分别在指纹模块中的用户号
+	u8 finger[5][193];	// 81-1045		//指纹特征值
+	u32 crc;			// 1046-1049	//本成员之前所有成员按字节计算的CRC值
 };
 
 __packed struct card_id_struct //总6字节

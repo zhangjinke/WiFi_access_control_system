@@ -258,7 +258,7 @@ s8 add_del_get_one_user(struct user_info *one_user_info, u8 cmd)
 	else
 	{
 		/* 移动文件指针到指定位置 */
-		if (lseek(fd, (sizeof(struct user_info)*(one_user_info->user_id-1)) + 4, SEEK_SET) == -1)
+		if (lseek(fd, (sizeof(struct user_info)*(one_user_info->user_id-1)) + HEADER_SIZE, SEEK_SET) == -1)
 		{
 			p_printf("lseek %s failed\r\n", user_info_database_path);
 			close(fd);
@@ -352,7 +352,7 @@ s8 get_set_state(u8 *state, u16 user_id, u8 cmd)
 	else
 	{
 		/* 移动文件指针到指定位置 */
-		if (lseek(fd, (sizeof(struct user_info)*(user_id-1)) + OFFSET(user_info,state) + 4, SEEK_SET) == -1)
+		if (lseek(fd, (sizeof(struct user_info)*(user_id-1)) + OFFSET(user_info,state) + HEADER_SIZE, SEEK_SET) == -1)
 		{
 			p_printf("lseek %s failed\r\n", user_info_database_path);
 			close(fd);
@@ -448,7 +448,7 @@ s8 init_card_array(struct card_id_struct card_array[])
 		for (i = 1; i<=max_user_num; i++)
 		{
 			/* 移动文件指针到指定位置 */
-			if (lseek(fd, (sizeof(struct user_info)*(i-1)) + 4, SEEK_SET) == -1)
+			if (lseek(fd, (sizeof(struct user_info)*(i-1)) + HEADER_SIZE, SEEK_SET) == -1)
 			{
 				p_printf("lseek %s failed\r\n", user_info_database_path);
 				close(fd);

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\build\rtthread-stm32.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\build\rtthread-stm32.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Wed Nov 02 21:46:53 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Thu Nov 03 10:39:47 2016
 <BR><P>
 <H3>Maximum Stack Usage =        824 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -345,7 +345,7 @@ Global Symbols
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_card_array
 </UL>
 
-<P><STRONG><a name="[e7]"></a>get_set_user_num</STRONG> (Thumb, 152 bytes, Stack size 16 bytes, p_database.o(.text))
+<P><STRONG><a name="[e7]"></a>get_set_user_num</STRONG> (Thumb, 214 bytes, Stack size 16 bytes, p_database.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 472<LI>Call Chain = get_set_user_num &rArr; open &rArr; dfs_file_open &rArr; dfs_normalize_path &rArr; rt_strdup &rArr; rt_malloc &rArr; rt_sem_take &rArr; rt_schedule &rArr; _rt_scheduler_stack_check &rArr; list_thread &rArr; _list_thread &rArr; object_split &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;write
@@ -353,12 +353,13 @@ Global Symbols
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;open
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lseek
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;close
+<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_check_thread_entry
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_card_array
 </UL>
 
-<P><STRONG><a name="[e8]"></a>get_set_user_num_max</STRONG> (Thumb, 152 bytes, Stack size 16 bytes, p_database.o(.text))
+<P><STRONG><a name="[e8]"></a>get_set_user_num_max</STRONG> (Thumb, 214 bytes, Stack size 16 bytes, p_database.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 472<LI>Call Chain = get_set_user_num_max &rArr; open &rArr; dfs_file_open &rArr; dfs_normalize_path &rArr; rt_strdup &rArr; rt_malloc &rArr; rt_sem_take &rArr; rt_schedule &rArr; _rt_scheduler_stack_check &rArr; list_thread &rArr; _list_thread &rArr; object_split &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;write
@@ -366,12 +367,13 @@ Global Symbols
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;open
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lseek
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;close
+<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_check_thread_entry
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_card_array
 </UL>
 
-<P><STRONG><a name="[e9]"></a>add_del_get_one_user</STRONG> (Thumb, 230 bytes, Stack size 16 bytes, p_database.o(.text))
+<P><STRONG><a name="[e9]"></a>add_del_get_one_user</STRONG> (Thumb, 318 bytes, Stack size 16 bytes, p_database.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 472<LI>Call Chain = add_del_get_one_user &rArr; open &rArr; dfs_file_open &rArr; dfs_normalize_path &rArr; rt_strdup &rArr; rt_malloc &rArr; rt_sem_take &rArr; rt_schedule &rArr; _rt_scheduler_stack_check &rArr; list_thread &rArr; _list_thread &rArr; object_split &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_memset
@@ -380,11 +382,12 @@ Global Symbols
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;open
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lseek
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;close
+<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_check_thread_entry
 </UL>
 
-<P><STRONG><a name="[eb]"></a>get_set_state</STRONG> (Thumb, 174 bytes, Stack size 24 bytes, p_database.o(.text))
+<P><STRONG><a name="[eb]"></a>get_set_state</STRONG> (Thumb, 236 bytes, Stack size 24 bytes, p_database.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 480<LI>Call Chain = get_set_state &rArr; open &rArr; dfs_file_open &rArr; dfs_normalize_path &rArr; rt_strdup &rArr; rt_malloc &rArr; rt_sem_take &rArr; rt_schedule &rArr; _rt_scheduler_stack_check &rArr; list_thread &rArr; _list_thread &rArr; object_split &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;write
@@ -392,11 +395,12 @@ Global Symbols
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;open
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lseek
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;close
+<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_check_thread_entry
 </UL>
 
-<P><STRONG><a name="[e0]"></a>init_card_array</STRONG> (Thumb, 204 bytes, Stack size 32 bytes, p_database.o(.text))
+<P><STRONG><a name="[e0]"></a>init_card_array</STRONG> (Thumb, 706 bytes, Stack size 32 bytes, p_database.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 504<LI>Call Chain = init_card_array &rArr; get_set_user_num_max &rArr; open &rArr; dfs_file_open &rArr; dfs_normalize_path &rArr; rt_strdup &rArr; rt_malloc &rArr; rt_sem_take &rArr; rt_schedule &rArr; _rt_scheduler_stack_check &rArr; list_thread &rArr; _list_thread &rArr; object_split &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_set_user_num_max
@@ -406,6 +410,7 @@ Global Symbols
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;open
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lseek
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;close
+<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_kprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_init_thread_entry
 </UL>
@@ -718,7 +723,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL>
-<P><STRONG><a name="[4d]"></a>user_check_thread_entry</STRONG> (Thumb, 728 bytes, Stack size 24 bytes, user_check_thread.o(.text))
+<P><STRONG><a name="[4d]"></a>user_check_thread_entry</STRONG> (Thumb, 732 bytes, Stack size 24 bytes, user_check_thread.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 504<LI>Call Chain = user_check_thread_entry &rArr; get_set_state &rArr; open &rArr; dfs_file_open &rArr; dfs_normalize_path &rArr; rt_strdup &rArr; rt_malloc &rArr; rt_sem_take &rArr; rt_schedule &rArr; _rt_scheduler_stack_check &rArr; list_thread &rArr; _list_thread &rArr; object_split &rArr; rt_kprintf &rArr; rt_vsnprintf &rArr; print_number
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_event_recv
@@ -4559,9 +4564,14 @@ Global Symbols
 <LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;assert_failed
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_time
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_get_card_event
+<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_set_state
+<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;add_del_get_one_user
+<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_set_user_num_max
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_set_user_num
 <LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_check_thread_entry
 <LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rtc_thread_entry
 <LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc522_thread_entry
+<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_card_array
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_set_device_name
 <LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_set_device_addr
 <LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;user_init_thread_entry
