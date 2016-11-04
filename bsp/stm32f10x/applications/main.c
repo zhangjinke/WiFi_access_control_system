@@ -19,6 +19,8 @@
 #include "rtc_thread.h"
 
 #include "p_database.h"
+#include "att_database.h"
+
 #include "device_config.h"
 #include "esp8266.h"
 #include "beep_door.h"
@@ -93,7 +95,6 @@ static void touch_screen_thread_entry(void* parameter)
 #ifdef  EmWin_Demo
 static void emwin_demo_thread_entry(void* parameter)
 {	
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC,ENABLE);//开启CRC时钟
 	WM_SetCreateFlags(WM_CF_MEMDEV);
 	GUI_Init();  			//STemWin初始化
 	GUI_DispString("hello world");
@@ -120,7 +121,9 @@ void user_init_thread_entry(void* parameter)
 	rt_err_t result;
 
 	void rt_enter_critical(void); /* 进入临界区*/
-		
+	/* 开启CRC时钟 */
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC,ENABLE);
+	/* 初始化蜂鸣器、门锁 */
 	rt_hw_beep_door_init();
 	/* 初始化设备地址 */
 	get_set_device_addr(&device_addr,GET_DEVICE);	
@@ -135,6 +138,9 @@ void user_init_thread_entry(void* parameter)
 	{
 		rt_kprintf("init card array failed\r\n");
 	}
+	/* 初始化考勤数据库 */
+	init_att_database();
+	
 	/* 初始化事件对象 */
 	rt_event_init(&user_check_event, "user_check_event", RT_IPC_FLAG_FIFO);	
 

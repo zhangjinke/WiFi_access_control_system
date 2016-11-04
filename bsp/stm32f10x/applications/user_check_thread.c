@@ -21,16 +21,27 @@
 #include <dfs_posix.h>
 /* 蜂鸣器、门锁相关头文件 */
 #include "beep_door.h"
+/* 考勤数据库相关头文件 */
+#include "att_database.h"
+/* 系统时钟相关头文件 */
+#include "rtc_thread.h"
 
 /* 延时函数 */
 #define rt_thread_delayMs(x) rt_thread_delay(rt_tick_from_millisecond(x))
+
+/* 获取结构体成员偏移宏定义 */
+#define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
+#define MEMBER_SIZE(Type, member) sizeof(((struct Type*)0)->member)
 
 rt_uint8_t user_check_stack[ 1024 ];	//线程栈
 struct rt_thread user_check_thread; 	//线程控制块
 
 /* 定义一个人员信息结构体 */
-struct user_info user_info_struct_get;
-u16 user_num;
+static struct user_info user_info_struct_get;
+static u16 user_num;
+
+/* 考勤信息数据库header结构体 */
+static struct att_info att_info_t;
 
 /*******************************************************************************
 * 函数名 	: user_check_thread_entry
@@ -91,6 +102,21 @@ void user_check_thread_entry(void* parameter)
 						rt_kprintf("\r\n超级管理员%s，欢迎光临，\r\n", user_info_struct_get.name);
 						/* 开锁 */
 						open_door();
+						/* 设置考勤信息 */
+						rt_memset(&att_info_t, 0 ,sizeof(struct att_info));
+						att_info_t.record_id = att_header_t.total + 1;
+						att_info_t.user_id = user_info_struct_get.user_id;
+						rt_memcpy(&att_info_t.student_id, &user_info_struct_get.student_id, MEMBER_SIZE(att_info, student_id));
+						rt_memcpy(&att_info_t.name, &user_info_struct_get.name, MEMBER_SIZE(att_info, name));
+						rt_memcpy(&att_info_t.state, &user_info_struct_get.state, MEMBER_SIZE(att_info, state));
+						att_info_t.year    = TimeValue.year;
+						att_info_t.month   = TimeValue.month;
+						att_info_t.day     = TimeValue.date;
+						att_info_t.hour    = TimeValue.hour;
+						att_info_t.minutes = TimeValue.minute;
+						att_info_t.second  = TimeValue.second;
+						/* 保存考勤信息 */
+						add_one_att_record(&att_info_t, SET_RECORD);
 						continue;
 					}
 					/* 判断用户是否激活 */
