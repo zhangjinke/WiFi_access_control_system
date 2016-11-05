@@ -57,7 +57,7 @@ s8 add_one_att_record(struct user_info *user_info_temp, u32 recved_event)
 	att_info_temp.user_id = user_info_temp->user_id;
 	rt_memcpy(&att_info_temp.student_id, &user_info_temp->student_id, MEMBER_SIZE(att_info, student_id));
 	rt_memcpy(&att_info_temp.name, &user_info_temp->name, MEMBER_SIZE(att_info, name));
-	att_info_temp.device_addr = device_addr;
+	att_info_temp.device_addr = device_config_t.device_addr;
 	if ((recved_event & card_in_check) || (recved_event & finger_in_check))
 	{
 		att_info_temp.state = 0; /* 设置状态为出门 */
@@ -179,7 +179,7 @@ void user_check_thread_entry(void* parameter)
 				}
 			}
 			/* 确认权限 */
-			if ((user_info_struct_get.authority[device_addr/8]&(1 << (device_addr%8))) != (1 << (device_addr%8)) )
+			if ((user_info_struct_get.authority[device_config_t.device_addr/8]&(1 << (device_config_t.device_addr%8))) != (1 << (device_config_t.device_addr%8)) )
 			{
 				rt_kprintf("\r\n权限不足！\r\n");
 				continue;
@@ -190,7 +190,7 @@ void user_check_thread_entry(void* parameter)
 				/* 门内刷卡 */
 				case card_in_check:
 				{
-					if ((user_info_struct_get.state[device_addr/8]&(1 << (device_addr%8))) != (1 << (device_addr%8)) )
+					if ((user_info_struct_get.state[device_config_t.device_addr/8]&(1 << (device_config_t.device_addr%8))) != (1 << (device_config_t.device_addr%8)) )
 					{	//0:门外 1:门内    如果在门外
 						rt_kprintf("\r\n进门未刷卡！\r\n");
 						continue;
@@ -198,7 +198,7 @@ void user_check_thread_entry(void* parameter)
 					else
 					{
 						/* 将状态设置为门外 */
-						user_info_struct_get.state[device_addr/8] &=~ (1 << (device_addr%8));
+						user_info_struct_get.state[device_config_t.device_addr/8] &=~ (1 << (device_config_t.device_addr%8));
 						get_set_state(user_info_struct_get.state,user_info_struct_get.user_id,SET_USER);
 						/* 开锁 */
 						open_door();
@@ -207,7 +207,7 @@ void user_check_thread_entry(void* parameter)
 				/* 门外刷卡 */
 				case card_out_check:
 				{
-					if ((user_info_struct_get.state[device_addr/8]&(1 << (device_addr%8))) == (1 << (device_addr%8)) )
+					if ((user_info_struct_get.state[device_config_t.device_addr/8]&(1 << (device_config_t.device_addr%8))) == (1 << (device_config_t.device_addr%8)) )
 					{	//0:门外 1:门内    如果在门内
 						rt_kprintf("\r\n出门未刷卡！\r\n");
 						continue;
@@ -215,7 +215,7 @@ void user_check_thread_entry(void* parameter)
 					else
 					{
 						/* 将状态设置为门内 */
-						user_info_struct_get.state[device_addr/8] |= (1 << (device_addr%8));
+						user_info_struct_get.state[device_config_t.device_addr/8] |= (1 << (device_config_t.device_addr%8));
 						get_set_state(user_info_struct_get.state,user_info_struct_get.user_id,SET_USER);
 						/* 开锁 */
 						open_door();

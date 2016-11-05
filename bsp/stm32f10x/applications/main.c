@@ -125,14 +125,12 @@ void user_init_thread_entry(void* parameter)
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC,ENABLE);
 	/* 初始化蜂鸣器、门锁 */
 	rt_hw_beep_door_init();
-	/* 初始化设备地址 */
-	get_set_device_addr(&device_addr,GET_DEVICE);	
-	rt_kprintf("device addr is %d\r\n",device_addr);
-	/* 初始化设备名称 */
-//	rt_memset(this_device_name, 0, sizeof(this_device_name));
-//	sprintf(this_device_name,"411");
-//	get_set_device_name(this_device_name,SET_DEVICE);	
-	get_set_device_name(this_device_name,GET_DEVICE);	
+	/* 初始化设备配置 */
+	init_device_config();
+//	device_config_t.device_addr = 1;
+//	rt_memcpy(device_config_t.this_device_name,"411",sizeof("411"));
+//	get_set_device_config(&device_config_t,SET_DEVICE);
+	rt_kprintf("device addr is %d name is %s\r\n",device_config_t.device_addr, device_config_t.this_device_name);
 	/* 初始化卡号数组 */
 	if (init_card_array(card_id_array) == -1)
 	{

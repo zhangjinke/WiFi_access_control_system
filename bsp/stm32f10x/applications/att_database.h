@@ -42,6 +42,7 @@ __packed struct att_info
 	u8  second;				//秒
 	u32 crc;				//本成员之前所有成员按字节计算的CRC值
 };
+
 __packed struct att_header
 {
 	u32 total;				//总条数

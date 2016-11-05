@@ -21,15 +21,20 @@
 /* 打印调试信息 */
 #define printCfgDebugInfo
 
-#define GET_DEVICE		0	//获取设备xxx
-#define SET_DEVICE		1	//设置设备xxx
+#define GET_DEVICE		0			//获取设备xxx
+#define SET_DEVICE		1			//设置设备xxx
 
+__packed struct device_config
+{
+	u8  device_addr;				//本机地址
+	s8  this_device_name[64];			//本机名称
+	u32 crc;						//crc校验
+};
 
-extern u8 device_addr;
-extern char this_device_name[64];
+extern struct device_config device_config_t;
 
-extern s8 get_set_device_addr(u8 *device_addr, u8 cmd);	//获取/设置设备地址
-extern s8 get_set_device_name(char *device_name, u8 cmd);	//获取/设置设备名称
+extern s8 init_device_config(void);                                      /* 初始化设备配置 */
+extern s8 get_set_device_config(struct device_config *device_config_t, u8 cmd); /* 获取/设置设备配置 */
 
 
 #endif

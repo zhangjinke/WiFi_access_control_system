@@ -16,6 +16,13 @@
 /* 文件系统相关头文件 */
 #include <dfs.h>
 #include <dfs_posix.h>
+
+#include "stm32_crc.h"
+
+/* 获取结构体成员偏移宏定义 */
+#define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
+#define MEMBER_SIZE(Type, member) sizeof(((struct Type*)0)->member)
+
 /* 延时函数 */
 #define rt_thread_delayMs(x) rt_thread_delay(rt_tick_from_millisecond(x))
 
@@ -29,22 +36,100 @@
 /* 设备配置文件路径 */
 const char *device_config_path = "/config.bin";
 
-/* 设备地址 */
-u8 device_addr = 0;
-/* 设备名称 */
-char this_device_name[64];
-
+struct device_config device_config_t;
 /*******************************************************************************
-* 函数名 	: get_set_device_addr
-* 描述   	: 获取/设置设备地址
-* 输入     	: - device_addr: 设备地址 - cmd: 0: 获取设备地址 1: 设置设备地址
+* 函数名 	: init_device_config
+* 描述   	: 初始化设备配置
+* 输入     	: None
 * 输出     	: None
 * 返回值    : -1: 失败 0: 成功
 *******************************************************************************/
-s8 get_set_device_addr(u8 *device_addr, u8 cmd)
+s8 init_device_config(void)
+{
+	int fd = -1;
+	u32 crc = 0;
+	
+	/* 打开设备配置 */
+	fd = open(device_config_path, O_RDWR|O_CREAT, 0);
+	if (fd < 0)
+	{
+		cfg_printf("open %s failed\r\n", device_config_path);
+		close(fd);
+		return -1;
+	}
+	else
+	{
+		/* 移动文件指针到指定位置 */
+		if (lseek(fd, 0, SEEK_SET) == -1)
+		{
+			cfg_printf("lseek %s failed\r\n", device_config_path);
+			close(fd);
+			return -1;
+		}
+		else
+		{
+			/* 获取设备配置信息 */
+			read(fd, &device_config_t, sizeof(struct device_config));
+			
+			/* 计算CRC */
+			crc = CalcBlockCRC((u8 *)(&device_config_t), sizeof(struct device_config) - 4);
+			if (crc != device_config_t.crc)
+			{
+				cfg_printf("device config crc validators fail, init device config\r\n");
+				/* 初始化设备配置信息 */
+				device_config_t.device_addr = 0;
+				rt_memset(device_config_t.this_device_name, 0, MEMBER_SIZE(device_config, this_device_name));
+				/* 计算CRC */
+				device_config_t.crc = CalcBlockCRC((u8 *)(&device_config_t), sizeof(struct device_config) - 4);
+				
+				/* 移动文件指针到指定位置 */
+				if (lseek(fd, 0, SEEK_SET) == -1)
+				{
+					cfg_printf("lseek %s failed\r\n", device_config_path);
+					close(fd);
+					return -1;
+				}
+				/* 写入设备配置 */
+				if (write(fd, &device_config_t, sizeof(struct device_config)) != sizeof(struct device_config))
+				{
+					cfg_printf("write %s failed\r\n", device_config_path);
+					close(fd);
+					return -1;
+				}
+				else
+				{
+					close(fd);
+					cfg_printf("init device config success\r\n");			
+				}		
+			}
+			else
+			{
+				close(fd);
+			}
+		}
+	}
+	
+	return 0;
+}
+
+/*******************************************************************************
+* 函数名 	: get_set_device_config
+* 描述   	: 获取/设置设备配置
+* 输入     	: - device_config: 设备配置结构体 - cmd: 0: 获取设备配置 1: 设置设备配置
+* 输出     	: None
+* 返回值    : -1: 失败 0: 成功
+*******************************************************************************/
+s8 get_set_device_config(struct device_config *device_config_t, u8 cmd)
 {
 	int fd;
-	/* 打开设备配置文件 */
+	
+	/* 检查参数合法性 */
+	if (device_config_t == 0)
+	{
+		cfg_printf("device_config_t addr is 0\r\n");
+		return -1;
+	}
+	/* 打开人员信息数据库 */
 	fd = open(device_config_path, O_RDWR|O_CREAT, 0);
 	if (fd < 0)
 	{
@@ -65,8 +150,8 @@ s8 get_set_device_addr(u8 *device_addr, u8 cmd)
 		{
 			if (cmd == 0)
 			{
-				/* 获取设备地址 */
-				if (read(fd, device_addr, 1) != 1)
+				/* 获取考勤记录总条数 */
+				if (read(fd, device_config_t, sizeof(struct device_config)) != sizeof(struct device_config))
 				{
 					cfg_printf("read %s failed\r\n", device_config_path);
 					close(fd);
@@ -75,13 +160,23 @@ s8 get_set_device_addr(u8 *device_addr, u8 cmd)
 				else
 				{
 					close(fd);
-					cfg_printf("get device addr %d success\r\n", *device_addr);			
+					if (device_config_t->crc == CalcBlockCRC((u8 *)device_config_t, sizeof(struct device_config) - 4))
+					{
+						cfg_printf("get device config addr is %d, name is %s success\r\n",device_config_t->device_addr, device_config_t->this_device_name);
+					}
+					else
+					{
+						cfg_printf("crc validators fail addr is %d, name is %s success\r\n",device_config_t->device_addr, device_config_t->this_device_name);
+						return -1;
+					}
 				}		
 			}
 			else if (cmd == 1)
 			{
-				/* 写入设备地址 */
-				if (write(fd, device_addr, 1) != 1)
+				/* 计算CRC */
+				device_config_t->crc = CalcBlockCRC((u8 *)device_config_t, sizeof(struct device_config) - 4);
+				/* 写入考勤记录总条数 */
+				if (write(fd, device_config_t, sizeof(struct device_config)) != sizeof(struct device_config))
 				{
 					cfg_printf("write %s failed\r\n", device_config_path);
 					close(fd);
@@ -90,86 +185,13 @@ s8 get_set_device_addr(u8 *device_addr, u8 cmd)
 				else
 				{
 					close(fd);
-					cfg_printf("set device addr %d success\r\n", *device_addr);			
+					cfg_printf("set device config addr is %d, name is %s success\r\n",device_config_t->device_addr, device_config_t->this_device_name);
 				}		
 			}
 			else
 			{
 				close(fd);
-				cfg_printf("set device addr cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	
-	close(fd);
-	return 0;
-}
-
-
-/*******************************************************************************
-* 函数名 	: get_set_device_name
-* 描述   	: 获取/设置设备名称
-* 输入     	: - device_name: 设备名称 - cmd: 0: 获取设备名称 1: 设置设备名称
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_device_name(char *device_name, u8 cmd)
-{
-	int fd;
-	/* 打开设备配置文件 */
-	fd = open(device_config_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		cfg_printf("open %s failed\r\n", device_config_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, 1, SEEK_SET) == -1)
-		{
-			cfg_printf("lseek %s failed\r\n", device_config_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			if (cmd == 0)
-			{
-				/* 获取设备名称 */
-				if (read(fd, device_name, 64) != 64)
-				{
-					cfg_printf("read %s failed\r\n", device_config_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					cfg_printf("get device name %s success\r\n", device_name);			
-				}		
-			}
-			else if (cmd == 1)
-			{
-				/* 写入设备名称 */
-				if (write(fd, device_name, 64) != 64)
-				{
-					cfg_printf("write %s failed\r\n", device_config_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					cfg_printf("set device name %s success\r\n", device_name);			
-				}		
-			}
-			else
-			{
-				close(fd);
-				cfg_printf("set device name cmd unknown\r\n");
+				cfg_printf("get set device config cmd unknown\r\n");
 				return -1;
 			}
 		}
@@ -177,4 +199,3 @@ s8 get_set_device_name(char *device_name, u8 cmd)
 	
 	return 0;
 }
-
