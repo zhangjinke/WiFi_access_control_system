@@ -39,8 +39,50 @@ struct rt_thread user_check_thread; 	//线程控制块
 /* 定义一个人员信息结构体 */
 static struct user_info user_info_struct_get;
 
-/* 考勤信息数据库header结构体 */
-static struct att_info att_info_t;
+/*******************************************************************************
+* 函数名 	: add_one_att_record
+* 描述   	: 添加一条考勤记录
+* 输入     	: - user_info_temp: 人员信息结构体 -recved_event: 事件(刷卡、耍指纹)
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+s8 add_one_att_record(struct user_info *user_info_temp, u32 recved_event)
+{
+	struct att_info att_info_temp;
+	struct att_header att_header_temp;
+
+	/* 设置考勤信息 */
+	rt_memset(&att_info_temp, 0 ,sizeof(struct att_info));
+	att_info_temp.record_id = att_header_t.total + 1;
+	att_info_temp.user_id = user_info_temp->user_id;
+	rt_memcpy(&att_info_temp.student_id, &user_info_temp->student_id, MEMBER_SIZE(att_info, student_id));
+	rt_memcpy(&att_info_temp.name, &user_info_temp->name, MEMBER_SIZE(att_info, name));
+	att_info_temp.device_addr = device_addr;
+	if ((recved_event & card_in_check) || (recved_event & finger_in_check))
+	{
+		att_info_temp.state = 0; /* 设置状态为出门 */
+	}
+	else
+	{
+		att_info_temp.state = 1; /* 设置状态为进门 */
+	}
+	att_info_temp.year    = TimeValue.year;
+	att_info_temp.month   = TimeValue.month;
+	att_info_temp.day     = TimeValue.date;
+	att_info_temp.hour    = TimeValue.hour;
+	att_info_temp.minutes = TimeValue.minute;
+	att_info_temp.second  = TimeValue.second;
+	/* 保存考勤信息 */
+	if (get_set_att_record(&att_info_temp, SET_RECORD) == 0)
+	{
+		att_header_temp.total = att_header_t.total + 1;
+		att_header_temp.not_upload = att_header_t.not_upload + 1;
+		get_set_record_header(&att_header_temp, SET_RECORD);
+		get_set_record_header(&att_header_t, GET_RECORD);
+	}
+	
+	return 0;
+}
 
 /*******************************************************************************
 * 函数名 	: user_check_thread_entry
@@ -56,7 +98,6 @@ void user_check_thread_entry(void* parameter)
 	u16 user_num = 0, max_user_num = 0;
 	s32 search_result = 0;
 	u32 i = 0;
-	static struct att_header att_header_temp;
 	
 	if(get_set_user_num(&user_num,GET_USER) == -1)
 	{
@@ -117,37 +158,8 @@ void user_check_thread_entry(void* parameter)
 				rt_kprintf("\r\n超级管理员%s，欢迎光临，\r\n", user_info_struct_get.name);
 				/* 开锁 */
 				open_door();
-				
-				/* 设置考勤信息 */
-				rt_memset(&att_info_t, 0 ,sizeof(struct att_info));
-				att_info_t.record_id = att_header_t.total + 1;
-				att_info_t.user_id = user_info_struct_get.user_id;
-				rt_memcpy(&att_info_t.student_id, &user_info_struct_get.student_id, MEMBER_SIZE(att_info, student_id));
-				rt_memcpy(&att_info_t.name, &user_info_struct_get.name, MEMBER_SIZE(att_info, name));
-				att_info_t.device_addr = device_addr;
-				if ((recved_event & card_in_check) || (recved_event & finger_in_check))
-				{
-					att_info_t.state = 0; /* 设置状态为出门 */
-				}
-				else
-				{
-					att_info_t.state = 1; /* 设置状态为进门 */
-				}
-				att_info_t.year    = TimeValue.year;
-				att_info_t.month   = TimeValue.month;
-				att_info_t.day     = TimeValue.date;
-				att_info_t.hour    = TimeValue.hour;
-				att_info_t.minutes = TimeValue.minute;
-				att_info_t.second  = TimeValue.second;
-				/* 保存考勤信息 */
-				if (get_set_att_record(&att_info_t, SET_RECORD) == 0)
-				{
-					att_header_temp.total = att_header_t.total + 1;
-					att_header_temp.not_upload = att_header_t.not_upload + 1;
-					get_set_record_header(&att_header_temp, SET_RECORD);
-					get_set_record_header(&att_header_t, GET_RECORD);
-				}
-				
+				/* 记录考勤信息 */
+				add_one_att_record(&user_info_struct_get, recved_event);
 				continue;
 			}
 			/* 判断用户是否激活 */
@@ -219,7 +231,8 @@ void user_check_thread_entry(void* parameter)
 				}
 				default : break;
 			}
-								
+			/* 记录考勤信息 */
+			add_one_att_record(&user_info_struct_get, recved_event);
 			/* 打印相关信息 */
 			rt_kprintf("\r\nuser id is %d\r\n", user_info_struct_get.user_id);
 			rt_kprintf("card id is %X\r\n", user_info_struct_get.card_id);
