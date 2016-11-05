@@ -54,5 +54,8 @@ extern struct att_header att_header_t;                               /* 考勤信息
 extern s8 init_att_database(void);                                        /* 初始化考勤数据库 */
 extern s8 get_set_record_header(struct att_header *att_header_t, u8 cmd); /* 获取/设置考勤数据库header */
 extern s8 get_set_att_record(struct att_info *one_att_info, u8 cmd);      /* 获取/设置一条考勤记录 */
+extern s8 get_set_delete(u32 record_id, u8 *is_delete, u8 cmd);           /* 获取/设置考勤记录是否删除 */
+extern s8 get_set_upload(u32 record_id, u8 *is_upload, u8 cmd);           /* 获取/设置考勤记录是否上传 */
+extern s8 wipe_att_database(void);                                        /* 清空考勤记录 */
 
 #endif

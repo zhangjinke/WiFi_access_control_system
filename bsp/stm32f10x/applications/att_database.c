@@ -105,6 +105,10 @@ s8 init_att_database(void)
 					att_printf("init att database success\r\n");			
 				}		
 			}
+			else
+			{
+				close(fd);
+			}
 		}
 	}
 	
@@ -294,6 +298,152 @@ s8 get_set_att_record(struct att_info *one_att_info, u8 cmd)
 }
 
 /*******************************************************************************
+* 函数名 	: get_set_delete
+* 描述   	: 获取/设置考勤记录是否删除
+* 输入     	: - record_id: 考勤记录ID号 - is_delete：状态 - cmd: 0: 获取 1: 设置
+* 输出     	: None
+* 返回值    : -1: 失败 0: 成功
+*******************************************************************************/
+s8 get_set_delete(u32 record_id, u8 *is_delete, u8 cmd)
+{
+	struct att_info att_info_temp;
+	
+	rt_memset(&att_info_temp, 0, sizeof(struct att_info));
+	/* 检查参数合法性 */
+	if (is_delete == 0)
+	{
+		att_printf("is_delete addr is 0\r\n");
+		return -1;
+	}
+	
+	att_info_temp.record_id = record_id;
+	if (get_set_att_record(&att_info_temp, GET_RECORD) == 0)
+	{
+		switch(cmd)
+		{
+			/* 获取删除标志位 */
+			case 0:
+			{
+				*is_delete = att_info_temp.is_delete;
+				att_printf("get att record %d delete is %d success\r\n", record_id, att_info_temp.is_delete);
+			}	break;
+			/* 设置删除标志位 */
+			case 1:
+			{
+				att_info_temp.is_delete = *is_delete;
+				if (get_set_att_record(&att_info_temp, SET_RECORD) == 0)
+				{
+					att_printf("set att record %d delete is %d success\r\n", record_id, att_info_temp.is_delete);
+				}
+				else
+				{
+					att_printf("set att delete failed\r\n");
+					return -1;
+				}
+			}	break;
+			default :
+			{
+				att_printf("get set delete cmd unknown\r\n");
+				return -1;
+			}
+		}
+	}
+	else
+	{
+		att_printf("get set att delete failed\r\n");
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+* 函数名 	: get_set_upload
+* 描述   	: 获取/设置考勤记录是否上传
+* 输入     	: - record_id: 考勤记录ID号 - is_delete：状态 - cmd: 0: 获取 1: 设置
+* 输出     	: None
+* 返回值    : -1: 失败 0: 成功
+*******************************************************************************/
+s8 get_set_upload(u32 record_id, u8 *is_upload, u8 cmd)
+{
+	struct att_info att_info_temp;
+	
+	rt_memset(&att_info_temp, 0, sizeof(struct att_info));
+	/* 检查参数合法性 */
+	if (is_upload == 0)
+	{
+		att_printf("is_upload addr is 0\r\n");
+		return -1;
+	}
+	
+	att_info_temp.record_id = record_id;
+	if (get_set_att_record(&att_info_temp, GET_RECORD) == 0)
+	{
+		switch(cmd)
+		{
+			/* 获取上传标志位 */
+			case 0:
+			{
+				*is_upload = att_info_temp.is_upload;
+				att_printf("get att record %d upload is %d success\r\n", record_id, att_info_temp.is_upload);
+			}	break;
+			/* 设置上传标志位 */
+			case 1:
+			{
+				att_info_temp.is_upload = *is_upload;
+				if (get_set_att_record(&att_info_temp, SET_RECORD) == 0)
+				{
+					att_printf("set att record %d upload is %d success\r\n", record_id, att_info_temp.is_upload);
+				}
+				else
+				{
+					att_printf("set att upload failed\r\n");
+					return -1;
+				}
+			}	break;
+			default :
+			{
+				att_printf("get set upload cmd unknown\r\n");
+				return -1;
+			}
+		}
+	}
+	else
+	{
+		att_printf("get set att upload failed\r\n");
+	}
+
+	return 0;
+}
+
+/*******************************************************************************
+* 函数名 	: wipe_att_database
+* 描述   	: 清空考勤记录
+* 输入     	: None
+* 输出     	: None
+* 返回值    : -1: 失败 0: 成功
+*******************************************************************************/
+s8 wipe_att_database(void)
+{
+	rt_memset(&att_header_t, 0, sizeof(struct att_header));
+	if (unlink(attendance_database_path) == 0)
+	{
+		get_set_record_header(&att_header_t, SET_RECORD);
+		init_att_database();
+	}
+	else
+	{
+		att_printf("wipe_att_database failed\r\n");
+		return -1;
+	}
+	return 0;
+}
+void wipe_att_db(void)
+{
+	wipe_att_database();
+}
+FINSH_FUNCTION_EXPORT(wipe_att_db, wipe att database)
+
+/*******************************************************************************
 * 函数名 	: print_record
 * 描述   	: 通过串口打印指定条数考勤记录
 * 输入     	: - count: 需要打印的条数
@@ -319,9 +469,9 @@ void print_record(u32 count)
 				one_att_info.is_upload, one_att_info.is_delete, one_att_info.record_id, one_att_info.user_id, 
 				one_att_info.student_id, one_att_info.name, one_att_info.device_addr, one_att_info.state);
 			
-			rt_kprintf(" 20%02d.%02d.%02d  %02d.%02d.%02d\r\n",
+			rt_kprintf(" time: 20%02d.%02d.%02d  %02d.%02d.%02d   CRC: %08X\r\n",
 				one_att_info.year, one_att_info.month, one_att_info.day, one_att_info.hour, 
-				one_att_info.minutes, one_att_info.second);
+				one_att_info.minutes, one_att_info.second, one_att_info.crc);
 			
 		}
 		else

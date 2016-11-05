@@ -138,6 +138,10 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -166,9 +170,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>73</LineNumber>
+          <LineNumber>416</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218348</Address>
+          <Address>134219036</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -177,23 +181,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>D:\椤圭洰-姣旇禌\鍒涙柊鍥㈤槦\2016 WiFi闂ㄧ\WiFi_access_control_system\bsp\stm32f10x\applications\att_database.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\rtthread_stm32\applications/att_database.c\73</Expression>
+          <Expression>\\rtthread_stm32\applications/att_database.c\416</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>77</LineNumber>
+          <LineNumber>255</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218368</Address>
+          <Address>134318916</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\椤圭洰-姣旇禌\鍒涙柊鍥㈤槦\2016 WiFi闂ㄧ\WiFi_access_control_system\bsp\stm32f10x\applications\att_database.c</Filename>
+          <Filename>D:\椤圭洰-姣旇禌\鍒涙柊鍥㈤槦\2016 WiFi闂ㄧ\WiFi_access_control_system\components\dfs\src\dfs_file.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\rtthread_stm32\applications/att_database.c\77</Expression>
+          <Expression>\\rtthread_stm32\../../components/dfs/src/dfs_file.c\255</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -202,13 +206,63 @@
           <WinNumber>1</WinNumber>
           <ItemText>att_header_t</ItemText>
         </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>user_info_struct_get</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>att_info_t,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>offset</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>offset,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>one_att_info</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>att_header_temp</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>len,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>att_info_temp</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>fullpath</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>fd</ItemText>
+        </Ww>
       </WatchWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
       <DebugFlag>
         <trace>0</trace>
-        <periodic>0</periodic>
+        <periodic>1</periodic>
         <aLwin>0</aLwin>
         <aCover>0</aCover>
         <aSer1>0</aSer1>
