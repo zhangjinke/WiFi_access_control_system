@@ -18,7 +18,7 @@ u8 wr_rdy = 1, rd_rdy = 1;
 //MASTER_WRITE_STATUS_TO_SLAVE_CMD 	1
 //MASTER_READ_STATUS_FROM_SLAVE_CMD 4
 
-static u32 counter = 0x01;
+//static u32 counter = 0x01;
 
 void esp8266_spi_transmit(u8 cmd, u8 addr, u8 *buf)
 {
@@ -106,7 +106,7 @@ void esp8266_exti_init(void)
 {
  	EXTI_InitTypeDef EXTI_InitStructure;
  	NVIC_InitTypeDef NVIC_InitStructure;
-	GPIO_InitTypeDef  GPIO_InitStructure;
+//	GPIO_InitTypeDef  GPIO_InitStructure;
 	
  	//使能端口时钟
 //	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC|RCC_APB2Periph_GPIOF, ENABLE);

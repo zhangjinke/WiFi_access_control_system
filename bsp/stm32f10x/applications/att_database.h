@@ -19,20 +19,21 @@
 #include <sys.h>
 
 /* 打印调试信息 */
-#define printAttDebugInfo
+//#define printAttDebugInfo
 
 #define GET_RECORD			0	//获取记录
 #define SET_RECORD			1	//设置记录
 
 __packed struct att_info
 {
-	u8  is_upload;			//是否上传
-	u8  is_delete;			//是否删除
+	u8  is_upload;			//是否上传 0:未上传 1:已上传
+	u8  is_delete;			//是否删除 0:未删除 1:已删除
 	u32 record_id;			//考勤记录ID号
 	u16 user_id;			//用户号
 	u8  student_id[16];		//学号 11个数字(前补0)
 	u8  name[8];			//姓名 右边补0x00
-	u8  state[16];			//进出状态
+	u8  device_addr;		//设备地址
+	u8  state;				//进出状态 0:出门 1:进门
 	u16 year;				//年(有效期，超过之后用户失效)
 	u8  month;				//月
 	u8  day;				//日
@@ -50,9 +51,8 @@ __packed struct att_header
 
 extern struct att_header att_header_t;                               /* 考勤信息数据库header结构体 */
 
-extern s8 init_att_database(void);                                   /* 初始化考勤数据库 */
-extern s8 get_set_record_count(u32 *record_count, u8 cmd);           /* 获取/设置数据库中考勤记录总条数 */
-extern s8 get_set_not_upload(u32 *not_upload, u8 cmd);               /* 获取/设置数据库中考勤记录未上传条数 */
-extern s8 add_one_att_record(struct att_info *one_att_info, u8 cmd); /* 添加/删除一条考勤记录 */
+extern s8 init_att_database(void);                                        /* 初始化考勤数据库 */
+extern s8 get_set_record_header(struct att_header *att_header_t, u8 cmd); /* 获取/设置考勤数据库header */
+extern s8 get_set_att_record(struct att_info *one_att_info, u8 cmd);      /* 获取/设置一条考勤记录 */
 
 #endif

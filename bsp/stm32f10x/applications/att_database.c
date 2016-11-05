@@ -20,6 +20,8 @@
 
 #include "stm32_crc.h"
 
+#include "finsh.h"
+
 /* 获取结构体成员偏移宏定义 */
 #define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
 #define MEMBER_SIZE(Type, member) sizeof(((struct Type*)0)->member)
@@ -110,20 +112,20 @@ s8 init_att_database(void)
 }
 
 /*******************************************************************************
-* 函数名 	: get_set_record_count
-* 描述   	: 获取/设置数据库中考勤记录总条数
-* 输入     	: - record_count: 考勤记录总条数 - cmd: 0: 获取 1: 设置
+* 函数名 	: get_set_record_header
+* 描述   	: 获取/设置考勤数据库header
+* 输入     	: - att_header_t: 考勤数据库header - cmd: 0: 获取 1: 设置
 * 输出     	: None
 * 返回值    : -1: 失败 0: 成功
 *******************************************************************************/
-s8 get_set_record_count(u32 *record_count, u8 cmd)
+s8 get_set_record_header(struct att_header *att_header_t, u8 cmd)
 {
 	int fd;
 	
 	/* 检查参数合法性 */
-	if (record_count == 0)
+	if (att_header_t == 0)
 	{
-		att_printf("record_count addr is 0\r\n");
+		att_printf("att_header_t addr is 0\r\n");
 		return -1;
 	}
 	/* 打开人员信息数据库 */
@@ -148,7 +150,7 @@ s8 get_set_record_count(u32 *record_count, u8 cmd)
 			if (cmd == 0)
 			{
 				/* 获取考勤记录总条数 */
-				if (read(fd, record_count, MEMBER_SIZE(att_header, total)) != MEMBER_SIZE(att_header, total))
+				if (read(fd, att_header_t, sizeof(struct att_header)) != sizeof(struct att_header))
 				{
 					att_printf("read %s failed\r\n", attendance_database_path);
 					close(fd);
@@ -157,13 +159,23 @@ s8 get_set_record_count(u32 *record_count, u8 cmd)
 				else
 				{
 					close(fd);
-					att_printf("get record count %d success\r\n", *record_count);			
+					if (att_header_t->crc == CalcBlockCRC((u8 *)att_header_t, sizeof(struct att_header) - 4))
+					{
+						att_printf("get record header total is %d, not_upload is %d success\r\n",att_header_t->total, att_header_t->not_upload);
+					}
+					else
+					{
+						att_printf("crc validators fail total is %d, not_upload is %d\r\n",att_header_t->total, att_header_t->not_upload);
+						return -1;
+					}
 				}		
 			}
 			else if (cmd == 1)
 			{
+				/* 计算CRC */
+				att_header_t->crc = CalcBlockCRC((u8 *)att_header_t, sizeof(struct att_header) - 4);
 				/* 写入考勤记录总条数 */
-				if (write(fd, record_count, MEMBER_SIZE(att_header, total)) != MEMBER_SIZE(att_header, total))
+				if (write(fd, att_header_t, sizeof(struct att_header)) != sizeof(struct att_header))
 				{
 					att_printf("write %s failed\r\n", attendance_database_path);
 					close(fd);
@@ -172,7 +184,7 @@ s8 get_set_record_count(u32 *record_count, u8 cmd)
 				else
 				{
 					close(fd);
-					att_printf("set record count %d success\r\n", *record_count);			
+					att_printf("set record header %d, %d success\r\n",att_header_t->total, att_header_t->not_upload);			
 				}		
 			}
 			else
@@ -186,92 +198,15 @@ s8 get_set_record_count(u32 *record_count, u8 cmd)
 	
 	return 0;
 }
-/*******************************************************************************
-* 函数名 	: get_set_not_upload
-* 描述   	: 获取/设置数据库中考勤记录未上传条数
-* 输入     	: - record_count: 考勤记录未上传条数 - cmd: 0: 获取 1: 设置
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_not_upload(u32 *not_upload, u8 cmd)
-{
-	int fd;
-	
-	/* 检查参数合法性 */
-	if (not_upload == 0)
-	{
-		att_printf("not_upload addr is 0\r\n");
-		return -1;
-	}
-	/* 打开人员信息数据库 */
-	fd = open(attendance_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		att_printf("open %s failed\r\n", attendance_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, OFFSET(att_header, not_upload), SEEK_SET) == -1)
-		{
-			att_printf("lseek %s failed\r\n", attendance_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			if (cmd == 0)
-			{
-				/* 获取考勤记录总条数 */
-				if (read(fd, not_upload, MEMBER_SIZE(att_header, not_upload)) != MEMBER_SIZE(att_header, not_upload))
-				{
-					att_printf("read %s failed\r\n", attendance_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					att_printf("get not upload record count %d success\r\n", *not_upload);			
-				}		
-			}
-			else if (cmd == 1)
-			{
-				/* 写入考勤记录总条数 */
-				if (write(fd, not_upload, MEMBER_SIZE(att_header, not_upload)) != MEMBER_SIZE(att_header, not_upload))
-				{
-					att_printf("write %s failed\r\n", attendance_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					att_printf("set upload record record count %d success\r\n", *not_upload);			
-				}		
-			}
-			else
-			{
-				close(fd);
-				att_printf("get set upload record record count cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	
-	return 0;
-}
 
 /*******************************************************************************
-* 函数名 	: add_delone_att_record
-* 描述   	: 添加/删除一条考勤记录
-* 输入     	: - one_att_info: 考勤记录结构体 - cmd: 0: 获取 1: 添加
+* 函数名 	: get_set_att_record
+* 描述   	: 获取/设置一条考勤记录
+* 输入     	: - one_att_info: 考勤记录结构体 - cmd: 0: 获取 1: 设置
 * 输出     	: None
 * 返回值    : -1: 失败 0: 成功
 *******************************************************************************/
-s8 add_one_att_record(struct att_info *one_att_info, u8 cmd)
+s8 get_set_att_record(struct att_info *one_att_info, u8 cmd)
 {
 	int fd;
 	
@@ -293,7 +228,7 @@ s8 add_one_att_record(struct att_info *one_att_info, u8 cmd)
 	else
 	{
 		/* 移动文件指针到指定位置 */
-		if (lseek(fd, (sizeof(struct att_info) * (one_att_info->record_id)) + sizeof(struct att_header), SEEK_SET) == -1)
+		if (lseek(fd, (sizeof(struct att_info) * (one_att_info->record_id - 1)) + sizeof(struct att_header), SEEK_SET) == -1)
 		{
 			att_printf("lseek %s failed\r\n", attendance_database_path);
 			close(fd);
@@ -316,12 +251,22 @@ s8 add_one_att_record(struct att_info *one_att_info, u8 cmd)
 					else
 					{
 						close(fd);
-						att_printf("get att record %d success\r\n", one_att_info->record_id);			
+						if (one_att_info->crc == CalcBlockCRC((u8 *)one_att_info, sizeof(struct att_info) - 4))
+						{
+							att_printf("get att record %d success\r\n", one_att_info->record_id);			
+						}
+						else
+						{
+							att_printf("crc validators fail,record_id is %d\r\n",one_att_info->record_id);
+							return -1;
+						}
 					}
 				}	break;
 				/* 添加考勤记录 */
 				case 1:
 				{
+					/* 计算CRC */
+					one_att_info->crc = CalcBlockCRC((u8 *)one_att_info, sizeof(struct att_info) - 4);
 					/* 写入 */
 					if (write(fd, one_att_info, sizeof(struct att_info)) != sizeof(struct att_info))
 					{
@@ -332,13 +277,13 @@ s8 add_one_att_record(struct att_info *one_att_info, u8 cmd)
 					else
 					{
 						close(fd);
-						att_printf("add att record %d success\r\n", one_att_info->user_id);			
+						att_printf("set att record %d success\r\n", one_att_info->user_id);			
 					}
 				}	break;
 				default :
 				{
 					close(fd);
-					att_printf("add delone att record cmd unknown\r\n");					
+					att_printf("get set att record cmd unknown\r\n");					
 					return -1;
 				}
 			}
@@ -346,4 +291,42 @@ s8 add_one_att_record(struct att_info *one_att_info, u8 cmd)
 	}
 	
 	return 0;
+}/*******************************************************************************
+* 函数名 	: print_record
+* 描述   	: 通过串口打印指定条数考勤记录
+* 输入     	: - count: 需要打印的条数
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+void print_record(u32 count)
+{
+	struct att_info one_att_info;
+	u32 i;
+	
+	if (count > att_header_t.total)
+	{
+		count = att_header_t.total;
+	}
+	rt_kprintf("total is %d, print %d\r\n",att_header_t.total, count);
+	for (i = 0; i < count; i++)
+	{
+		one_att_info.record_id = i + 1;
+		if (get_set_att_record(&one_att_info, GET_RECORD) == 0)
+		{
+			rt_kprintf("is_upload: %d is_delete: %d record_id: %5d user_id: %5d student_id: %11s name: %4s device_addr: %3d state: %d ",
+				one_att_info.is_upload, one_att_info.is_delete, one_att_info.record_id, one_att_info.user_id, 
+				one_att_info.student_id, one_att_info.name, one_att_info.device_addr, one_att_info.state);
+			
+			rt_kprintf(" 20%02d.%02d.%02d  %02d.%02d.%02d\r\n",
+				one_att_info.year, one_att_info.month, one_att_info.day, one_att_info.hour, 
+				one_att_info.minutes, one_att_info.second);
+			
+		}
+		else
+		{
+			rt_kprintf("get_set_att_record failed\r\n");
+		}
+	}
 }
+FINSH_FUNCTION_EXPORT(print_record, print record)
+
