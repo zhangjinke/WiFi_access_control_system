@@ -16,7 +16,7 @@
 #define _BEEP_DOOR_H_	 
 #include "sys.h"
 
-#define BEEP PEout(5)	//高电平蜂鸣器响
+#define BEEP PAout(0)	//高电平蜂鸣器响
 #define DOOR PEout(4)	//低电平开门
 
 void rt_hw_beep_door_init(void);

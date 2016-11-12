@@ -42,6 +42,7 @@ void rc522_thread_entry(void* parameter)
 	u32 in_timer = 0, out_timer = 0;	//超时时间计数器，防止同一张卡读取多次
 	u8 in_timer_en = 0, out_timer_en = 0;	//超时时间计数器使能位 1: 使能
 	u8 is_in_over_time = 0, is_out_over_time = 0;	//是否超过阈值时间 0: 已经超过
+	
 	/* 初始化RC522设备 */
 	InitRC522();
 	while(1)

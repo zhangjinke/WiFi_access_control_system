@@ -3,23 +3,35 @@
 #include "spi_bus.h"
 #include <drivers/spi.h>
 #include <rtthread.h>
-
+#include "finsh.h"
 
 #define delay_ms(ms) rt_thread_delay(rt_tick_from_millisecond(ms))
+
+#define start_bit (1 << 7)
+#define end_bit (1 << 6)
 
 struct rt_spi_device *rt_spi_esp8266_device;//esp8266设备
 struct rt_spi_message esp8266_message;	//SPI设备通信用消息结构体
 
-u8 esp8266_readBuf[64],esp8266_writeBuf[64];	//SPI通信缓存
-u8 wr_rdy = 1, rd_rdy = 1;
+static u8 esp8266_readBuf[64],esp8266_writeBuf[64];	//SPI通信缓存
+u8 wr_rdy = 1, rd_rdy = 0;
 
-//MASTER_WRITE_DATA_TO_SLAVE_CMD 	2
-//MASTER_READ_DATA_FROM_SLAVE_CMD 	3
-//MASTER_WRITE_STATUS_TO_SLAVE_CMD 	1
-//MASTER_READ_STATUS_FROM_SLAVE_CMD 4
+/* esp8266事件控制块 */
+struct rt_event esp8266_event;
 
-//static u32 counter = 0x01;
-
+/*******************************************************************************
+* 函数名 	: esp8266_spi_transmit
+* 描述   	: SPI传输函数
+* 输入     	: - cmd: 传输指令
+*			    MASTER_WRITE_DATA_TO_SLAVE_CMD    2
+*			    MASTER_READ_DATA_FROM_SLAVE_CMD   3
+*			    MASTER_WRITE_STATUS_TO_SLAVE_CMD  1
+*			    MASTER_READ_STATUS_FROM_SLAVE_CMD 4
+*             - addr: 地址，通常为0
+*             - buf: 缓冲区，传入写入数据或传出读出数据
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
 void esp8266_spi_transmit(u8 cmd, u8 addr, u8 *buf)
 {
 	int i;
@@ -56,50 +68,152 @@ void esp8266_spi_transmit(u8 cmd, u8 addr, u8 *buf)
 	}
 }
 
-u8 buf[32];
-u8 pack[1024];
-//首字节固定为command byte，用于大于31字节数据包的分包辅助命令。
-//11xx xxxx 两位，作为数据分包标志，首包1xxx xxxx，末包x1xx xxxx。
-//此两位不置，表示是中间的数据分包。xx11 1111 共6位数据，表示当前包的长度
-void WriteTest(void)
+
+/*******************************************************************************
+* 函数名 	: esp8266_spi_write
+* 描述   	: SPI传输函数
+*             首字节固定为command byte，用于大于31字节数据包的分包辅助命令。
+*             11xx xxxx 两位，作为数据分包标志，首包1xxx xxxx，末包x1xx xxxx。
+*             此两位不置，表示是中间的数据分包。xx11 1111 共6位数据，表示当前包的长度
+* 输入     	: - cmd: 传输指令
+* 输出     	: None
+* 返回值    : -1: 失败 0: 成功
+*******************************************************************************/
+s8 esp8266_spi_write(u8 *pack, u32 lenth)
 {
-	int i,j;
-	int num = 1024/31 + 1;			//包数
-	int last_byte = 1024%31;	//最后一包有效字节数
+	int i,j,t = 50000;
+	u8 buf[32];
+	int num = lenth/31 + 1;		//包数
+	int last_byte = lenth%31;	//最后一包有效字节数
 	
-	/* 赋初值 */
-	for (i = 0; i < sizeof(pack); i++) { pack[i] = (u8)i; }
+	if (last_byte == 0)
+	{
+		num--;
+		last_byte = 31;
+	}
+	/* 检查参数合法性 */
+	if (pack == NULL)
+	{
+		return -1;
+	}
 	
 	for (i = 0; i < num; i++)
 	{
+		buf[0] = 0;                              	/* 清空command byte */
 		/* 设置command byte */
-		if (i == 0) { buf[0] = ((1<<7) | 31);}
-		else if (i != num - 1) { buf[0] = 31; }
-		else { buf[0] = ((1<<6) | last_byte); }
-		/* 将数据复制到发送buf中 */
-		if(i == num - 1) { for (j = 0; j < last_byte; j++) { buf[j + 1] = pack[i*31 + j]; } }
-		else { for (j = 0; j < 31; j++) { buf[j + 1] = pack[i*31 + j]; } }
+		if (i != num - 1)        					/* 如果不为首末包,设置当前包长度 */
+		{
+			buf[0] = 31; 
+		}
+		else                              			/* 设置当前包长度并添加末包标志位 */
+		{
+			buf[0] = (end_bit | last_byte);
+		}
+		if (i == 0) { buf[0] |= start_bit;}     	/* 添加首包标志位 */
 		
-		while(wr_rdy != 1);
+		/* 将数据复制到发送buf中 */
+		if(i == num - 1) 
+		{
+			for (j = 0; j < last_byte; j++) 
+			{
+				buf[j + 1] = pack[i*31 + j]; 
+			}
+		}
+		else
+		{
+			for (j = 0; j < 31; j++) 
+			{
+				buf[j + 1] = pack[i*31 + j];
+			}
+		}
+		
+		/* 等待发送准备好标志位 */
+		while((wr_rdy != 1)&&(t != 0))
+		{
+			t--;
+		}
 		wr_rdy = 0;
+		if (t == 0)
+		{
+			return -1; /* 等待超时，返回错误 */
+		}
+		/* 启动一次SPI传输 */
 		esp8266_spi_transmit(0x02, 0, buf);	
 	}
+	
+	return 0;
 }
 
-void ReadTest(void)
+s8 WriteTest(u32 lenth)
 {
+	u8 buf[1024*5];
 	int i;
 	
-	while(rd_rdy != 1);
-	for (i = 0; i < 32; i++) { buf[i] = i; }
-	
-	esp8266_spi_transmit(0x03, 0, buf);
+	for (i = 0; i < sizeof(buf); i++)
+	{
+		buf[i] = (u8)i;
+	}
+	return esp8266_spi_write(buf,lenth);
+}
+FINSH_FUNCTION_EXPORT(WriteTest, WiFiWriteTest)
 
-//	rt_kprintf("\r\nesp8266 read Buf is \r\n");
-//	for (i = 0; i < 34; i++)
-//	{
-//		rt_kprintf("%02X ", esp8266_readBuf[i]);
-//	}
+volatile static u8 temp = 0;
+s8 esp8266_spi_read(void)
+{
+	int i = 0;
+	static u8 buf[32], pack[1024*5];
+	static u8 isReceive = 0, receive_pack = 0;
+	static u32 pack_counter = 0, pack_lenth = 0;
+	rt_memset(buf, 0, sizeof(buf));
+	/* 启动一次SPI传输 */
+	esp8266_spi_transmit(0x03, 0, buf);
+temp++;
+if (temp == 2)
+{
+	temp = temp;
+}
+	if (( buf[0] & start_bit) == start_bit)
+	{
+		i = 0;
+		receive_pack = 0;
+		isReceive = 1;
+		pack_counter = 0;
+		pack_lenth = 0;
+//		rt_kprintf("\r\nstart_bit\r\n");
+	}
+	if (isReceive)
+	{
+		pack_lenth += buf[0] & 0x3f;
+		if (( buf[0] & end_bit) == end_bit)
+		{
+			for (i = 0; i < (buf[0] & 0x3f); i++)
+			{
+				pack[pack_counter*31 + i] = buf[i + 1];
+			}
+			isReceive = 0;
+			receive_pack = 1;
+//			rt_kprintf("end_bit\r\n");
+		}
+		else
+		{
+			for (i = 0; i < 31; i++)
+			{
+				pack[pack_counter*31 + i] = buf[i + 1];
+			}
+			pack_counter++;
+		}
+	}
+	if (receive_pack)
+	{
+		receive_pack = 0;
+		rt_kprintf("data lenth is %d: \r\n",pack_lenth);
+		for(i=0;i<pack_lenth;i++)
+		{
+			rt_kprintf("%02X ",pack[i]);
+		}
+		rt_kprintf("\r\n");
+	}
+	i++;
 }
 
 void esp8266_exti_init(void)
@@ -191,7 +305,7 @@ s8 init_esp8266(void)
 		struct rt_spi_configuration cfg;
 		cfg.data_width = 8;
 		cfg.mode = RT_SPI_MODE_0 | RT_SPI_MSB;
-		cfg.max_hz = 0.1 * 1000 * 1000;
+		cfg.max_hz = 30 * 1000 * 1000;
 		rt_spi_configure(rt_spi_esp8266_device, &cfg);
 	}
 	/* 初始化中断线 */
@@ -225,6 +339,8 @@ void EXTI9_5_IRQHandler(void)
 	{
 		/* 从机更新发送缓存，主机可以读取 */
 		rd_rdy = 1;
+		/* 发送hspi接收事件 */
+		rt_event_send(&esp8266_event, hspi_rx);	
 		/* 清除LINE7上的中断标志位 */
 		EXTI_ClearITPendingBit(EXTI_Line7);
 	}

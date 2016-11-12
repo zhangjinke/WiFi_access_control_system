@@ -140,8 +140,9 @@ void user_init_thread_entry(void* parameter)
 	init_att_database();
 	
 	/* 初始化事件对象 */
-	rt_event_init(&user_check_event, "user_check_event", RT_IPC_FLAG_FIFO);	
-
+	rt_event_init(&esp8266_event, "esp8266_event", RT_IPC_FLAG_FIFO);
+	rt_event_init(&user_check_event, "user_check_event", RT_IPC_FLAG_FIFO);
+	
     /* 初始化SPI总线 */
 	rt_hw_stm32_spi_bus_init();
 #ifdef  TFT
@@ -226,11 +227,11 @@ void user_init_thread_entry(void* parameter)
                             RT_NULL,
                             (rt_uint8_t*)&wifi_stack[0],
                             sizeof(wifi_stack),
-                            19,
+                            5,
                             5);
     if (result == RT_EOK)
     {
-        //rt_thread_startup(&wifi_thread);
+        rt_thread_startup(&wifi_thread);
     }
 	
 	void rt_exit_critical(void); /* 退出临界区*/
@@ -242,7 +243,7 @@ void user_init_thread_entry(void* parameter)
                             RT_NULL,
                             (rt_uint8_t*)&rtc_stack[0],
                             sizeof(rtc_stack),
-                            5,
+                            26,
                             5);
     if (result == RT_EOK)
     {

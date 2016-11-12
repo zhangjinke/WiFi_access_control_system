@@ -42,7 +42,7 @@ static rt_err_t configure(struct rt_spi_device *device, struct rt_spi_configurat
         uint32_t stm32_spi_max_clock;
         uint32_t max_hz;
 
-        stm32_spi_max_clock = 16000000;
+        stm32_spi_max_clock = 36000000;
         max_hz = configuration->max_hz;
 
         if(max_hz > stm32_spi_max_clock)
