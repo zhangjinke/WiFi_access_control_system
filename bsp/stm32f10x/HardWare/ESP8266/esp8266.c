@@ -13,7 +13,6 @@
 struct rt_spi_device *rt_spi_esp8266_device;//esp8266设备
 struct rt_spi_message esp8266_message;	//SPI设备通信用消息结构体
 
-static u8 esp8266_readBuf[64],esp8266_writeBuf[64];	//SPI通信缓存
 u8 wr_rdy = 1, rd_rdy = 0;
 
 /* esp8266事件控制块 */
@@ -34,7 +33,9 @@ struct rt_event esp8266_event;
 *******************************************************************************/
 void esp8266_spi_transmit(u8 cmd, u8 addr, u8 *buf)
 {
+	static u8 esp8266_readBuf[34],esp8266_writeBuf[34];	//SPI通信缓存
 	int i;
+	
 	/* 参数范围检测 */
 	if (((cmd != 2)&&(cmd != 3))||(buf == NULL))
 	{
@@ -67,7 +68,6 @@ void esp8266_spi_transmit(u8 cmd, u8 addr, u8 *buf)
 		for (i = 0; i < 32; i++) { buf[i] = esp8266_readBuf[i + 2]; }
 	}
 }
-
 
 /*******************************************************************************
 * 函数名 	: esp8266_spi_write
@@ -157,87 +157,186 @@ s8 WriteTest(u32 lenth)
 }
 FINSH_FUNCTION_EXPORT(WriteTest, WiFiWriteTest)
 
-volatile static u8 temp = 0;
+u8 recv_pack[1024*5];
+u8 is_recv_pack = 0;
+u32 recv_lenth = 0;
+/*******************************************************************************
+* 函数名 	: esp8266_spi_read
+* 描述   	: SPI接收函数, 由接收线程调用, 禁止其它地方调用
+* 输入     	: None
+* 输出     	: None
+* 返回值    : -1: 接收未完成 0: 接收完成
+*******************************************************************************/
 s8 esp8266_spi_read(void)
 {
-	int i = 0;
-	static u8 buf[32], pack[1024*5];
-	static u8 isReceive = 0, receive_pack = 0;
-	static u32 pack_counter = 0, pack_lenth = 0;
-	rt_memset(buf, 0, sizeof(buf));
+	static int i = 0;
+	static u8 buf[32];
+	static u8 isReceive = 0;
+	static u32 pack_counter = 0;
+	
 	/* 启动一次SPI传输 */
 	esp8266_spi_transmit(0x03, 0, buf);
-temp++;
-if (temp == 2)
-{
-	temp = temp;
-}
-	if (( buf[0] & start_bit) == start_bit)
+	
+	if (is_recv_pack == 0)
 	{
-		i = 0;
-		receive_pack = 0;
-		isReceive = 1;
-		pack_counter = 0;
-		pack_lenth = 0;
-//		rt_kprintf("\r\nstart_bit\r\n");
-	}
-	if (isReceive)
-	{
-		pack_lenth += buf[0] & 0x3f;
-		if (( buf[0] & end_bit) == end_bit)
+		/* 搜索首包 */
+		if (( buf[0] & start_bit) == start_bit)
 		{
-			for (i = 0; i < (buf[0] & 0x3f); i++)
+			i = 0;
+			is_recv_pack = 0;
+			isReceive = 1;
+			pack_counter = 0;
+			recv_lenth = 0;
+		}
+		/* 搜索到首包之后开始接收数据 */
+		if (isReceive)
+		{
+			recv_lenth += buf[0] & 0x3f;                    /* 记录接收到的字节数 */
+			if (( buf[0] & end_bit) == end_bit)             /* 判断是否收到末包 */
 			{
-				pack[pack_counter*31 + i] = buf[i + 1];
+				for (i = 0; i < (buf[0] & 0x3f); i++)
+				{
+					recv_pack[pack_counter*31 + i] = buf[i + 1];
+				}
+				isReceive = 0;
+				is_recv_pack = 1;                           /* 收到末包之后停止接收数据并置位接收完成标志 */
 			}
-			isReceive = 0;
-			receive_pack = 1;
-//			rt_kprintf("end_bit\r\n");
-		}
-		else
-		{
-			for (i = 0; i < 31; i++)
+			else
 			{
-				pack[pack_counter*31 + i] = buf[i + 1];
+				for (i = 0; i < 31; i++)
+				{
+					recv_pack[pack_counter*31 + i] = buf[i + 1];
+				}
+				pack_counter++;                             /* 记录接收到的包数 */
 			}
-			pack_counter++;
-		}
-	}
-	if (receive_pack)
-	{
-		receive_pack = 0;
-		rt_kprintf("data lenth is %d: \r\n",pack_lenth);
-		for(i=0;i<pack_lenth;i++)
+		}	
+		/* 接收完成 */
+		if (is_recv_pack == 1)
 		{
-			rt_kprintf("%02X ",pack[i]);
+			return 0;
 		}
-		rt_kprintf("\r\n");
+		i++;
 	}
-	i++;
+	
+	return -1;
 }
 
+/*******************************************************************************
+* 函数名 	: esp8266_cs_cfg
+* 描述   	: 复位ESP8266
+* 输入     	: None
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+void esp8266_io_cfg(u8 io, u8 mode)
+{
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
+	//使能端口时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB|RCC_APB2Periph_GPIOC, ENABLE);
+
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;                       /* IO口速度为50MHz */
+	if(mode == ENABLE) { GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; } /* 推挽输出 */
+	else { GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING; }          /* 模拟输入 */	
+	switch (io)
+	{
+		case EN:
+		{
+			GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;                               /* esp8266_en */
+			GPIO_Init(GPIOC, &GPIO_InitStructure);                                  /* 根据设定参数初始化 */	
+		} break;
+		case RST:
+		{
+			GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;                               /* esp8266_rst */
+			GPIO_Init(GPIOB, &GPIO_InitStructure);                                  /* 根据设定参数初始化 */	
+		} break;
+		case CS:
+		{
+			GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;                               /* esp8266_cs */
+			GPIO_Init(GPIOA, &GPIO_InitStructure);                                  /* 根据设定参数初始化 */	
+		} break;
+		case BOOT:
+		{
+			GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;                               /* esp8266_boot */
+			GPIO_Init(GPIOC, &GPIO_InitStructure);                                  /* 根据设定参数初始化 */	
+		} break;
+		default: break;
+	}
+}
+
+/*******************************************************************************
+* 函数名 	: esp8266_boot
+* 描述   	: 使ESP8266进入boot(1,6), 烧录程序
+* 输入     	: None
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+void esp8266_boot(void)
+{
+	/* 改变引脚到需要的状态 */
+	esp8266_io_cfg(BOOT, ENABLE);
+	esp8266_io_cfg(EN, ENABLE);
+	esp8266_io_cfg(RST, ENABLE);
+	esp8266_io_cfg(CS, DISABLE);
+	ESP8266_EN = 0;
+	ESP8266_RST = 0;
+	ESP8266_BOOT = 0;
+	delay_ms(5);
+	ESP8266_EN = 1;
+	ESP8266_RST = 1;
+	delay_ms(200);
+	ESP8266_BOOT = 1;
+	esp8266_io_cfg(CS, ENABLE);
+	esp8266_io_cfg(RST, DISABLE);
+	esp8266_io_cfg(EN, DISABLE);
+	esp8266_io_cfg(BOOT, DISABLE);
+}
+FINSH_FUNCTION_EXPORT(esp8266_boot, esp8266_reset)
+
+/*******************************************************************************
+* 函数名 	: esp8266_reset
+* 描述   	: 复位ESP8266
+* 输入     	: None
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+void esp8266_reset(void)
+{
+	/* 改变引脚到需要的状态 */
+	esp8266_io_cfg(EN, ENABLE);
+	esp8266_io_cfg(RST, ENABLE);
+	esp8266_io_cfg(CS, DISABLE);
+	ESP8266_EN = 0;
+	ESP8266_RST = 0;
+	delay_ms(5);
+	/* 复位 */
+	ESP8266_EN = 1;
+	ESP8266_RST = 1;
+	delay_ms(200);
+	/* 恢复引脚状态 */
+	esp8266_io_cfg(CS, ENABLE);
+	esp8266_io_cfg(RST, DISABLE);
+	esp8266_io_cfg(EN, DISABLE);
+}
+FINSH_FUNCTION_EXPORT(esp8266_reset, esp8266_reset)
+
+/*******************************************************************************
+* 函数名 	: esp8266_exti_init
+* 描述   	: spi双线透传协议中的中断线初始化
+* 输入     	: None
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
 void esp8266_exti_init(void)
 {
  	EXTI_InitTypeDef EXTI_InitStructure;
  	NVIC_InitTypeDef NVIC_InitStructure;
-//	GPIO_InitTypeDef  GPIO_InitStructure;
-	
- 	//使能端口时钟
-//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC|RCC_APB2Periph_GPIOF, ENABLE);
   	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);	//使能复用功能时钟
-
-//	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_4;//C4
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD; //设置成下拉输入
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IO口速度为50MHz
-// 	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化		
-
-//	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_7;//F7
-// 	GPIO_Init(GPIOF, &GPIO_InitStructure);//初始化		
 	
-    //GPIOC.4 中断线以及中断初始化配置 上升沿触发
-  	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource4);
+    //GPIOB.1 中断线以及中断初始化配置 上升沿触发
+  	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource1);
 
-  	EXTI_InitStructure.EXTI_Line = EXTI_Line4;	//GOIO0
+  	EXTI_InitStructure.EXTI_Line = EXTI_Line1;	//GOIO5
   	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;	
   	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
   	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
@@ -246,16 +345,16 @@ void esp8266_exti_init(void)
     //GPIOF.7 中断线以及中断初始化配置 上升沿触发
   	GPIO_EXTILineConfig(GPIO_PortSourceGPIOF,GPIO_PinSource7);
 	
-  	EXTI_InitStructure.EXTI_Line = EXTI_Line7;	//GOIO2
+  	EXTI_InitStructure.EXTI_Line = EXTI_Line7;	//GOIO4
   	EXTI_Init(&EXTI_InitStructure);	  	//根据EXTI_InitStruct中指定的参数初始化外设EXTI寄存器
 
-  	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_IRQn;				//使能GOIO0所在的外部中断通道
+  	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;				//使能GOIO5所在的外部中断通道
   	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
   	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x03;			//子优先级3
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;					//使能外部中断通道
   	NVIC_Init(&NVIC_InitStructure); 
 
-    NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;				//使能GOIO2所在的外部中断通道
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;				//使能GOIO4所在的外部中断通道
   	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	//抢占优先级2， 
   	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;			//子优先级2
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;					//使能外部中断通道
@@ -269,24 +368,21 @@ void esp8266_attach_device()
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	
  	//使能端口时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	
-	//配置esp8266 RST引脚
-	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_0;//B0
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IO口速度为50MHz
- 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化	
 	//配置RC522_IN_CS引脚
     esp8266_spi_cs.GPIOx = GPIOA;
     esp8266_spi_cs.GPIO_Pin = GPIO_Pin_4;
 
-	GPIO_InitStructure.GPIO_Pin = esp8266_spi_cs.GPIO_Pin;//esp8266_cs
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 	//推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//IO口速度为50MHz
-	GPIO_Init(esp8266_spi_cs.GPIOx, &GPIO_InitStructure);		//根据设定参数初始化
-	GPIO_SetBits(esp8266_spi_cs.GPIOx,esp8266_spi_cs.GPIO_Pin);//输出高
+	GPIO_InitStructure.GPIO_Pin = esp8266_spi_cs.GPIO_Pin;      /* esp8266_cs */
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;            /* 推挽输出 */
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;           /* IO口速度为50MHz */
+	GPIO_Init(esp8266_spi_cs.GPIOx, &GPIO_InitStructure);       /* 根据设定参数初始化 */
+	GPIO_SetBits(esp8266_spi_cs.GPIOx,esp8266_spi_cs.GPIO_Pin); /* 输出高 */
 	//附着设备到SPI总线
 	rt_spi_bus_attach_device(&esp8266_spi_device, "ESP8266", "SPI1", (void*)&esp8266_spi_cs);
+	/* 复位esp8266 */
+	esp8266_reset();
 }
 
 s8 init_esp8266(void)
@@ -305,7 +401,7 @@ s8 init_esp8266(void)
 		struct rt_spi_configuration cfg;
 		cfg.data_width = 8;
 		cfg.mode = RT_SPI_MODE_0 | RT_SPI_MSB;
-		cfg.max_hz = 30 * 1000 * 1000;
+		cfg.max_hz = 0.1 * 1000 * 1000;
 		rt_spi_configure(rt_spi_esp8266_device, &cfg);
 	}
 	/* 初始化中断线 */
@@ -314,34 +410,28 @@ s8 init_esp8266(void)
 	return 0;
 }
 
-void check_state_line(void)
-{
-	if (esp8266_wr_state == 1) { wr_rdy = 1; }
-	if (esp8266_rd_state == 1) { rd_rdy = 1; }
-}
-
-/* GPIO0上升沿中断 */
-void EXTI4_IRQHandler(void)
-{
-	if (EXTI_GetITStatus(EXTI_Line4) == SET)
-	{
-		/* 主机发送数据处理完毕，可以进行下一次写入 */
-		wr_rdy = 1;
-		/* 清除LINE4上的中断标志位 */
-		EXTI_ClearITPendingBit(EXTI_Line4);
-	}
-}
-
-/* GPIO2上升沿中断 */
+/* GPIO4上升沿中断 */
 void EXTI9_5_IRQHandler(void)
 {
 	if (EXTI_GetITStatus(EXTI_Line7) == SET)
 	{
+		/* 主机发送数据处理完毕，可以进行下一次写入 */
+		wr_rdy = 1;
+		/* 清除LINE7上的中断标志位 */
+		EXTI_ClearITPendingBit(EXTI_Line7);
+	}
+}
+
+/* GPIO5上升沿中断 */
+void EXTI1_IRQHandler(void)
+{
+	if (EXTI_GetITStatus(EXTI_Line1) == SET)
+	{
 		/* 从机更新发送缓存，主机可以读取 */
 		rd_rdy = 1;
 		/* 发送hspi接收事件 */
-		rt_event_send(&esp8266_event, hspi_rx);	
-		/* 清除LINE7上的中断标志位 */
-		EXTI_ClearITPendingBit(EXTI_Line7);
+		rt_event_send(&esp8266_event, hspi_rx);
+		/* 清除LINE4上的中断标志位 */
+		EXTI_ClearITPendingBit(EXTI_Line1);
 	}
 }
