@@ -215,7 +215,6 @@ s8 esp8266_spi_read(void)
 		{
 			return 0;
 		}
-		i++;
 	}
 	
 	return -1;
