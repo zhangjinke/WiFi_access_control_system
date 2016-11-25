@@ -80,7 +80,7 @@ static void touch_screen_thread_entry(void* parameter)
 		#ifdef  STemWin
 		GUI_TOUCH_Exec();
 		#endif  /* STemWin */
-		rt_thread_delayMs(5);
+		rt_thread_delayMs(10);
 	}	
 }
 #endif  /* TOUCH_SCREEN */
@@ -166,7 +166,7 @@ void user_init_thread_entry(void* parameter)
                             RT_NULL,
                             (rt_uint8_t*)&emwin_demo_stack[0],
                             sizeof(emwin_demo_stack),
-                            15,
+                            18,
                             5);
     if (result == RT_EOK)
     {
@@ -182,7 +182,7 @@ void user_init_thread_entry(void* parameter)
                             RT_NULL,
                             (rt_uint8_t*)&touch_screen_stack[0],
                             sizeof(touch_screen_stack),
-                            18,
+                            17,
                             5);
     if (result == RT_EOK)
     {

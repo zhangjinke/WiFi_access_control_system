@@ -59,6 +59,10 @@ Purpose     : Template driver, could be used as starting point for new
 #include "LCD_ConfDefaults.h"
 #include "ILI93xx.h"
 
+//定义LCD的命令和数据位.
+u32 UCGUI_LCD_CMD  = 0X64000000; //地址为0X64000000; 
+u32 UCGUI_LCD_DATA = 0X64000002; //地址为0x64000002;  
+
 /*********************************************************************
 *
 *       Defines
@@ -138,30 +142,34 @@ typedef struct {
 *   that no check on the parameters needs to be performed.
 */
 static void _SetPixelIndex(GUI_DEVICE * pDevice, int x, int y, int PixelIndex) {
+	LCD_Fast_DrawPoint(x,y,PixelIndex);
     //
     // Convert logical into physical coordinates (Dep. on LCDConf.h)
     //
-    #if (LCD_MIRROR_X == 1) || (LCD_MIRROR_Y == 1) || (LCD_SWAP_XY == 1)
-      int xPhys, yPhys;
+//    #if (LCD_MIRROR_X == 1) || (LCD_MIRROR_Y == 1) || (LCD_SWAP_XY == 1)
+//      int xPhys, yPhys;
 
-      xPhys = LOG2PHYS_X(x, y);
-      yPhys = LOG2PHYS_Y(x, y);
-    #else
-      #define xPhys x
-      #define yPhys y
-    #endif
-    {
-		LCD_Fast_DrawPoint(x,y,PixelIndex);
-      //
-      // Write into hardware ... Adapt to your system
-      //
-      // TBD by customer...
-      //
-    }
-    #if (LCD_MIRROR_X == 0) && (LCD_MIRROR_Y == 0) && (LCD_SWAP_XY == 0)
-      #undef xPhys
-      #undef yPhys
-    #endif
+//      xPhys = LOG2PHYS_X(x, y);
+//      yPhys = LOG2PHYS_Y(x, y);
+//    #else
+//      #define xPhys x
+//      #define yPhys y
+//    #endif
+//    GUI_USE_PARA(pDevice);
+//    GUI_USE_PARA(x);
+//    GUI_USE_PARA(y);
+//    GUI_USE_PARA(PixelIndex);
+//    {
+//      //
+//      // Write into hardware ... Adapt to your system
+//      //
+//      // TBD by customer...
+//      //
+//    }
+//    #if (LCD_MIRROR_X == 0) && (LCD_MIRROR_Y == 0) && (LCD_SWAP_XY == 0)
+//      #undef xPhys
+//      #undef yPhys
+//    #endif
 }
 
 /*********************************************************************
@@ -187,14 +195,12 @@ static unsigned int _GetPixelIndex(GUI_DEVICE * pDevice, int x, int y) {
       #define xPhys x
       #define yPhys y
     #endif
+    GUI_USE_PARA(pDevice);
+    GUI_USE_PARA(x);
+    GUI_USE_PARA(y);
     {
-      //
-      // Write into hardware ... Adapt to your system
-      //
-      // TBD by customer...
-      //
-      PixelIndex = LCD_ReadPoint(x,y);
-    }
+		PixelIndex = LCD_ReadPoint(x,y);    
+	}
     #if (LCD_MIRROR_X == 0) && (LCD_MIRROR_Y == 0) && (LCD_SWAP_XY == 0)
       #undef xPhys
       #undef yPhys
@@ -220,23 +226,24 @@ static void _XorPixel(GUI_DEVICE * pDevice, int x, int y) {
 *       _FillRect
 */
 static void _FillRect(GUI_DEVICE * pDevice, int x0, int y0, int x1, int y1) {
-  LCD_PIXELINDEX PixelIndex;
-  int x;
+	LCD_Fill(x0,y0,x1,y1,LCD_COLORINDEX);
+//  LCD_PIXELINDEX PixelIndex;
+//  int x;
 
-  PixelIndex = LCD__GetColorIndex();
-  if (GUI_pContext->DrawMode & LCD_DRAWMODE_XOR) {
-    for (; y0 <= y1; y0++) {
-      for (x = x0; x <= x1; x++) {
-        _XorPixel(pDevice, x, y0);
-      }
-    }
-  } else {
-    for (; y0 <= y1; y0++) {
-      for (x = x0; x <= x1; x++) {
-        _SetPixelIndex(pDevice, x, y0, PixelIndex);
-      }
-    }
-  }
+//  PixelIndex = LCD__GetColorIndex();
+//  if (GUI_pContext->DrawMode & LCD_DRAWMODE_XOR) {
+//    for (; y0 <= y1; y0++) {
+//      for (x = x0; x <= x1; x++) {
+//        _XorPixel(pDevice, x, y0);
+//      }
+//    }
+//  } else {
+//    for (; y0 <= y1; y0++) {
+//      for (x = x0; x <= x1; x++) {
+//        _SetPixelIndex(pDevice, x, y0, PixelIndex);
+//      }
+//    }
+//  }
 }
 
 /*********************************************************************
@@ -491,9 +498,14 @@ static void  _DrawBitLine8BPP(GUI_DEVICE * pDevice, int x, int y, U8 const GUI_U
 *   Only required for 16bpp color depth of target. Should be removed otherwise.
 */
 static void _DrawBitLine16BPP(GUI_DEVICE * pDevice, int x, int y, U16 const GUI_UNI_PTR * p, int xsize) {
-  for (;xsize > 0; xsize--, x++, p++) {
-    _SetPixelIndex(pDevice, x, y, *p);
-  }
+	LCD_PIXELINDEX pixel;
+	LCD_SetCursor(x,y);
+	*(__IO uint16_t *)(UCGUI_LCD_CMD)  = lcddev.wramcmd;  //写入颜色值
+	for (;xsize > 0; xsize--, x++, p++) 
+	{
+		pixel = *p;
+        *(__IO uint16_t *)(UCGUI_LCD_DATA) =pixel;
+    }
 }
 
 /*********************************************************************

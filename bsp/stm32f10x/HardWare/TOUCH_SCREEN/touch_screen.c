@@ -135,27 +135,27 @@ u8 TP_Read_XY2(u16 *x,u16 *y)
 //用来校准用的
 //x,y:坐标
 //color:颜色
-void TP_Drow_Touch_Point(u16 x,u16 y,u16 color)
+void TP_Drow_Touch_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
 {
 	POINT_COLOR=color;
-	LCD_DrawLine(x-12,y,x+13,y);//横线
-	LCD_DrawLine(x,y-12,x,y+13);//竖线
-	LCD_DrawPoint(x+1,y+1);
-	LCD_DrawPoint(x-1,y+1);
-	LCD_DrawPoint(x+1,y-1);
-	LCD_DrawPoint(x-1,y-1);
-	LCD_Draw_Circle(x,y,6);//画中心圈
+	LCD_DrawLine(TFTLCD, x-12,y,x+13,y);//横线
+	LCD_DrawLine(TFTLCD, x,y-12,x,y+13);//竖线
+	LCD_DrawPoint(TFTLCD, x+1,y+1);
+	LCD_DrawPoint(TFTLCD, x-1,y+1);
+	LCD_DrawPoint(TFTLCD, x+1,y-1);
+	LCD_DrawPoint(TFTLCD, x-1,y-1);
+	LCD_Draw_Circle(TFTLCD, x,y,6);//画中心圈
 }	  
 //画一个大点(2*2的点)		   
 //x,y:坐标
 //color:颜色
-void TP_Draw_Big_Point(u16 x,u16 y,u16 color)
+void TP_Draw_Big_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
 {	    
 	POINT_COLOR=color;
-	LCD_DrawPoint(x,y);//中心点 
-	LCD_DrawPoint(x+1,y);
-	LCD_DrawPoint(x,y+1);
-	LCD_DrawPoint(x+1,y+1);	 	  	
+	LCD_DrawPoint(TFTLCD, x,y);//中心点 
+	LCD_DrawPoint(TFTLCD, x+1,y);
+	LCD_DrawPoint(TFTLCD, x,y+1);
+	LCD_DrawPoint(TFTLCD, x+1,y+1);	 	  	
 }						  
 //////////////////////////////////////////////////////////////////////////////////		  
 //触摸按键扫描
@@ -261,32 +261,43 @@ u8 TP_Get_Adjdata(void)
 u8* const TP_REMIND_MSG_TBL="Please use the stylus click the cross on the screen.The cross will always move until the screen adjustment is completed.";
  					  
 //提示校准结果(各个参数)
-void TP_Adj_Info_Show(u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u16 fac)
-{	  
+void TP_Adj_Info_Show(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u16 fac)
+{
+	_lcd_dev *lcddev;
+	
+	if (TFTLCD == LCD0)
+	{
+		lcddev = &lcddev0;
+	}
+	else
+	{
+		lcddev = &lcddev1;
+	}
+
 	POINT_COLOR=RED;
-	LCD_ShowString(40,160,lcddev.width,lcddev.height,16,"x1:");
- 	LCD_ShowString(40+80,160,lcddev.width,lcddev.height,16,"y1:");
- 	LCD_ShowString(40,180,lcddev.width,lcddev.height,16,"x2:");
- 	LCD_ShowString(40+80,180,lcddev.width,lcddev.height,16,"y2:");
-	LCD_ShowString(40,200,lcddev.width,lcddev.height,16,"x3:");
- 	LCD_ShowString(40+80,200,lcddev.width,lcddev.height,16,"y3:");
-	LCD_ShowString(40,220,lcddev.width,lcddev.height,16,"x4:");
- 	LCD_ShowString(40+80,220,lcddev.width,lcddev.height,16,"y4:");  
- 	LCD_ShowString(40,240,lcddev.width,lcddev.height,16,"fac is:");     
-	LCD_ShowNum(40+24,160,x0,4,16);		//显示数值
-	LCD_ShowNum(40+24+80,160,y0,4,16);	//显示数值
-	LCD_ShowNum(40+24,180,x1,4,16);		//显示数值
-	LCD_ShowNum(40+24+80,180,y1,4,16);	//显示数值
-	LCD_ShowNum(40+24,200,x2,4,16);		//显示数值
-	LCD_ShowNum(40+24+80,200,y2,4,16);	//显示数值
-	LCD_ShowNum(40+24,220,x3,4,16);		//显示数值
-	LCD_ShowNum(40+24+80,220,y3,4,16);	//显示数值
- 	LCD_ShowNum(40+56,240,fac,3,16); 	//显示数值,该数值必须在95~105范围之内.
+	LCD_ShowString(TFTLCD, 40,160,lcddev->width,lcddev->height,16,"x1:");
+ 	LCD_ShowString(TFTLCD, 40+80,160,lcddev->width,lcddev->height,16,"y1:");
+ 	LCD_ShowString(TFTLCD, 40,180,lcddev->width,lcddev->height,16,"x2:");
+ 	LCD_ShowString(TFTLCD, 40+80,180,lcddev->width,lcddev->height,16,"y2:");
+	LCD_ShowString(TFTLCD, 40,200,lcddev->width,lcddev->height,16,"x3:");
+ 	LCD_ShowString(TFTLCD, 40+80,200,lcddev->width,lcddev->height,16,"y3:");
+	LCD_ShowString(TFTLCD, 40,220,lcddev->width,lcddev->height,16,"x4:");
+ 	LCD_ShowString(TFTLCD, 40+80,220,lcddev->width,lcddev->height,16,"y4:");  
+ 	LCD_ShowString(TFTLCD, 40,240,lcddev->width,lcddev->height,16,"fac is:");     
+	LCD_ShowNum(TFTLCD, 40+24,160,x0,4,16);		//显示数值
+	LCD_ShowNum(TFTLCD, 40+24+80,160,y0,4,16);	//显示数值
+	LCD_ShowNum(TFTLCD, 40+24,180,x1,4,16);		//显示数值
+	LCD_ShowNum(TFTLCD, 40+24+80,180,y1,4,16);	//显示数值
+	LCD_ShowNum(TFTLCD, 40+24,200,x2,4,16);		//显示数值
+	LCD_ShowNum(TFTLCD, 40+24+80,200,y2,4,16);	//显示数值
+	LCD_ShowNum(TFTLCD, 40+24,220,x3,4,16);		//显示数值
+	LCD_ShowNum(TFTLCD, 40+24+80,220,y3,4,16);	//显示数值
+ 	LCD_ShowNum(TFTLCD, 40+56,240,fac,3,16); 	//显示数值,该数值必须在95~105范围之内.
 }
 		 
 //触摸屏校准代码
 //得到四个校准参数
-void TP_Adjust(void)
+void TP_Adjust(LCD_TypeDef *TFTLCD)
 {								 
 	u16 pos_temp[4][2];//坐标缓存值
 	u8  cnt=0;	
