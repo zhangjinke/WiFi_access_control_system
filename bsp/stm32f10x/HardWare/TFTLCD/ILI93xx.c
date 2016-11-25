@@ -40,13 +40,13 @@ _lcd_dev lcddev1;
 //写寄存器函数
 //regval:寄存器值
 void LCD_WR_REG(LCD_TypeDef *TFTLCD, u16 regval)
-{   
+{
 	TFTLCD->LCD_REG=regval;//写入要写的寄存器序号	 
 }
 //写LCD数据
 //data:要写入的值
 void LCD_WR_DATA(LCD_TypeDef *TFTLCD, u16 data)
-{	 
+{
 	TFTLCD->LCD_RAM=data;		 
 }
 //读LCD数据
@@ -61,7 +61,7 @@ u16 LCD_RD_DATA(LCD_TypeDef *TFTLCD)
 //LCD_Reg:寄存器地址
 //LCD_RegValue:要写入的数据
 void LCD_WriteReg(LCD_TypeDef *TFTLCD, u16 LCD_Reg,u16 LCD_RegValue)
-{	
+{
 	TFTLCD->LCD_REG = LCD_Reg;		//写入要写的寄存器序号	 
 	TFTLCD->LCD_RAM = LCD_RegValue;//写入数据	    		 
 }	   
@@ -69,11 +69,11 @@ void LCD_WriteReg(LCD_TypeDef *TFTLCD, u16 LCD_Reg,u16 LCD_RegValue)
 //LCD_Reg:寄存器地址
 //返回值:读到的数据
 u16 LCD_ReadReg(LCD_TypeDef *TFTLCD, u16 LCD_Reg)
-{										   
+{
 	LCD_WR_REG(TFTLCD, LCD_Reg);		//写入要读的寄存器序号
 	//DelayUs(5);		  
 	return LCD_RD_DATA(TFTLCD);		//返回读到的值
-}   
+}
 //开始写GRAM
 void LCD_WriteRAM_Prepare(LCD_TypeDef *TFTLCD)
 {
@@ -278,7 +278,8 @@ void LCD_Display_Dir(LCD_TypeDef *TFTLCD, u8 dir)
 //该初始化函数可以初始化各种ILI93XX液晶,但是其他函数是基于ILI9320的!!!
 //在其他型号的驱动芯片上没有测试! 
 void TFTLCD_Init(void)
-{ 					
+{
+	LCD_TypeDef *TFTLCD = 0;	
  	GPIO_InitTypeDef GPIO_InitStructure;
 	FSMC_NORSRAMInitTypeDef  FSMC_NORSRAMInitStructure;
     FSMC_NORSRAMTimingInitTypeDef  readWriteTiming; 
@@ -354,75 +355,87 @@ void TFTLCD_Init(void)
     FSMC_NORSRAMInit(&FSMC_NORSRAMInitStructure);              /* 初始化FSMC配置 */
    	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);              /* 使能BANK3 */
 	
-	rt_thread_delayMs(50); 					// delay 50 ms 
-  	lcddev0.id=LCD_ReadReg(LCD0, 0x0000);	//读ID（9320/9325/9328/4531/4535等IC）   
-	if(lcddev0.id==0x9328)//ILI9328   OK  
+	rt_thread_delayMs(50); 					// delay 50 ms
+	for (u8 i = 0; i < 2; i++)
 	{
-  		LCD_WriteReg(LCD0, 0x00EC,0x108F);// internal timeing      
- 		LCD_WriteReg(LCD0, 0x00EF,0x1234);// ADD        
-        LCD_WriteReg(LCD0, 0x0001,0x0100);     
-        LCD_WriteReg(LCD0, 0x0002,0x0700);//电源开启                    
-        LCD_WriteReg(LCD0, 0x0003,(1<<12)|(3<<4)|(0<<3) );//65K    
-        LCD_WriteReg(LCD0, 0x0004,0x0000);                                   
-        LCD_WriteReg(LCD0, 0x0008,0x0202);	           
-        LCD_WriteReg(LCD0, 0x0009,0x0000);         
-        LCD_WriteReg(LCD0, 0x000a,0x0000);//display setting         
-        LCD_WriteReg(LCD0, 0x000c,0x0001);//display setting          
-        LCD_WriteReg(LCD0, 0x000d,0x0000);//0f3c          
-        LCD_WriteReg(LCD0, 0x000f,0x0000);
-		//电源配置
-        LCD_WriteReg(LCD0, 0x0010,0x0000);   
-        LCD_WriteReg(LCD0, 0x0011,0x0007);
-        LCD_WriteReg(LCD0, 0x0012,0x0000);                                                                 
-        LCD_WriteReg(LCD0, 0x0013,0x0000);                 
-     	LCD_WriteReg(LCD0, 0x0007,0x0001);                 
-       	rt_thread_delayMs(50); 
-        LCD_WriteReg(LCD0, 0x0010,0x1490);   
-        LCD_WriteReg(LCD0, 0x0011,0x0227);
-        rt_thread_delayMs(50); 
-        LCD_WriteReg(LCD0, 0x0012,0x008A);                  
-        rt_thread_delayMs(50); 
-        LCD_WriteReg(LCD0, 0x0013,0x1a00);   
-        LCD_WriteReg(LCD0, 0x0029,0x0006);
-        LCD_WriteReg(LCD0, 0x002b,0x000d);
-        rt_thread_delayMs(50); 
-        LCD_WriteReg(LCD0,0x0020,0x0000);                                                            
-        LCD_WriteReg(LCD0,0x0021,0x0000);           
-		rt_thread_delayMs(50); 
-		//伽马校正
-        LCD_WriteReg(LCD0, 0x0030,0x0000); 
-        LCD_WriteReg(LCD0, 0x0031,0x0604);   
-        LCD_WriteReg(LCD0, 0x0032,0x0305);
-        LCD_WriteReg(LCD0, 0x0035,0x0000);
-        LCD_WriteReg(LCD0, 0x0036,0x0C09); 
-        LCD_WriteReg(LCD0, 0x0037,0x0204);
-        LCD_WriteReg(LCD0, 0x0038,0x0301);        
-        LCD_WriteReg(LCD0, 0x0039,0x0707);     
-        LCD_WriteReg(LCD0, 0x003c,0x0000);
-        LCD_WriteReg(LCD0, 0x003d,0x0a0a);
-        rt_thread_delayMs(50); 
-        LCD_WriteReg(LCD0, 0x0050,0x0000); //水平GRAM起始位置 
-        LCD_WriteReg(LCD0, 0x0051,0x00ef); //水平GRAM终止位置                    
-        LCD_WriteReg(LCD0, 0x0052,0x0000); //垂直GRAM起始位置                    
-        LCD_WriteReg(LCD0, 0x0053,0x013f); //垂直GRAM终止位置  
+		if (i == 0)
+		{
+			TFTLCD = LCD0;
+		}
+		else
+		{
+			TFTLCD = LCD1;
+		}
+		
+		lcddev0.id=LCD_ReadReg(LCD0, 0x0000);	//读ID（9320/9325/9328/4531/4535等IC）   
+		if(lcddev0.id==0x9328)//ILI9328   OK  
+		{
+			LCD_WriteReg(TFTLCD, 0x00EC,0x108F);// internal timeing      
+			LCD_WriteReg(TFTLCD, 0x00EF,0x1234);// ADD        
+			LCD_WriteReg(TFTLCD, 0x0001,0x0100);     
+			LCD_WriteReg(TFTLCD, 0x0002,0x0700);//电源开启                    
+			LCD_WriteReg(TFTLCD, 0x0003,(1<<12)|(3<<4)|(0<<3) );//65K    
+			LCD_WriteReg(TFTLCD, 0x0004,0x0000);                                   
+			LCD_WriteReg(TFTLCD, 0x0008,0x0202);	           
+			LCD_WriteReg(TFTLCD, 0x0009,0x0000);         
+			LCD_WriteReg(TFTLCD, 0x000a,0x0000);//display setting         
+			LCD_WriteReg(TFTLCD, 0x000c,0x0001);//display setting          
+			LCD_WriteReg(TFTLCD, 0x000d,0x0000);//0f3c          
+			LCD_WriteReg(TFTLCD, 0x000f,0x0000);
+			//电源配置
+			LCD_WriteReg(TFTLCD, 0x0010,0x0000);   
+			LCD_WriteReg(TFTLCD, 0x0011,0x0007);
+			LCD_WriteReg(TFTLCD, 0x0012,0x0000);                                                                 
+			LCD_WriteReg(TFTLCD, 0x0013,0x0000);                 
+			LCD_WriteReg(TFTLCD, 0x0007,0x0001);                 
+			rt_thread_delayMs(50); 
+			LCD_WriteReg(TFTLCD, 0x0010,0x1490);   
+			LCD_WriteReg(TFTLCD, 0x0011,0x0227);
+			rt_thread_delayMs(50); 
+			LCD_WriteReg(TFTLCD, 0x0012,0x008A);                  
+			rt_thread_delayMs(50); 
+			LCD_WriteReg(TFTLCD, 0x0013,0x1a00);   
+			LCD_WriteReg(TFTLCD, 0x0029,0x0006);
+			LCD_WriteReg(TFTLCD, 0x002b,0x000d);
+			rt_thread_delayMs(50); 
+			LCD_WriteReg(TFTLCD,0x0020,0x0000);                                                            
+			LCD_WriteReg(TFTLCD,0x0021,0x0000);           
+			rt_thread_delayMs(50); 
+			//伽马校正
+			LCD_WriteReg(TFTLCD, 0x0030,0x0000); 
+			LCD_WriteReg(TFTLCD, 0x0031,0x0604);   
+			LCD_WriteReg(TFTLCD, 0x0032,0x0305);
+			LCD_WriteReg(TFTLCD, 0x0035,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0036,0x0C09); 
+			LCD_WriteReg(TFTLCD, 0x0037,0x0204);
+			LCD_WriteReg(TFTLCD, 0x0038,0x0301);        
+			LCD_WriteReg(TFTLCD, 0x0039,0x0707);     
+			LCD_WriteReg(TFTLCD, 0x003c,0x0000);
+			LCD_WriteReg(TFTLCD, 0x003d,0x0a0a);
+			rt_thread_delayMs(50); 
+			LCD_WriteReg(TFTLCD, 0x0050,0x0000); //水平GRAM起始位置 
+			LCD_WriteReg(TFTLCD, 0x0051,0x00ef); //水平GRAM终止位置                    
+			LCD_WriteReg(TFTLCD, 0x0052,0x0000); //垂直GRAM起始位置                    
+			LCD_WriteReg(TFTLCD, 0x0053,0x013f); //垂直GRAM终止位置  
 
-		LCD_WriteReg(LCD0, 0x0060,0xa700);        
-        LCD_WriteReg(LCD0, 0x0061,0x0001); 
-        LCD_WriteReg(LCD0, 0x006a,0x0000);
-        LCD_WriteReg(LCD0, 0x0080,0x0000);
-        LCD_WriteReg(LCD0, 0x0081,0x0000);
-        LCD_WriteReg(LCD0, 0x0082,0x0000);
-        LCD_WriteReg(LCD0, 0x0083,0x0000);
-        LCD_WriteReg(LCD0, 0x0084,0x0000);
-        LCD_WriteReg(LCD0, 0x0085,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0060,0xa700);        
+			LCD_WriteReg(TFTLCD, 0x0061,0x0001); 
+			LCD_WriteReg(TFTLCD, 0x006a,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0080,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0081,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0082,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0083,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0084,0x0000);
+			LCD_WriteReg(TFTLCD, 0x0085,0x0000);
 
-        LCD_WriteReg(LCD0, 0x0090,0x0010);     
-        LCD_WriteReg(LCD0, 0x0092,0x0600);  
-        //开启显示设置     
-        LCD_WriteReg(LCD0, 0x0007,0x0133); 
-	} 
-	LCD_Display_Dir(LCD0, 1);		//EMWIN实验默认设置为横屏
-	LCD_Clear(LCD0, BLACK);		//显示全黑
+			LCD_WriteReg(TFTLCD, 0x0090,0x0010);     
+			LCD_WriteReg(TFTLCD, 0x0092,0x0600);  
+			//开启显示设置     
+			LCD_WriteReg(TFTLCD, 0x0007,0x0133); 
+		} 
+		LCD_Display_Dir(TFTLCD, 1);	//EMWIN实验默认设置为横屏
+		LCD_Clear(TFTLCD, BLACK);		//显示全黑
+	}
 	set_lcd_led(1, 250);	//点亮门内液晶背光
 	set_lcd_led(0, 250);	//点亮门外液晶背光
 }

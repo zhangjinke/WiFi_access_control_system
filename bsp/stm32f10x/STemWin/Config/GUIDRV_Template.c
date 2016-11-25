@@ -151,7 +151,14 @@ static void _SetPixelIndex(GUI_DEVICE * pDevice, int x, int y, int PixelIndex) {
       #define yPhys y
     #endif
     {
-		LCD_Fast_DrawPoint(x,y,PixelIndex);
+		if (pDevice->LayerIndex == 0)
+		{
+			LCD_Fast_DrawPoint(LCD0, x,y,PixelIndex);	
+		}
+		else
+		{
+			LCD_Fast_DrawPoint(LCD1, x,y,PixelIndex);	
+		}
       //
       // Write into hardware ... Adapt to your system
       //
@@ -193,7 +200,14 @@ static unsigned int _GetPixelIndex(GUI_DEVICE * pDevice, int x, int y) {
       //
       // TBD by customer...
       //
-      PixelIndex = LCD_ReadPoint(x,y);
+		if (pDevice->LayerIndex == 0)
+		{
+			PixelIndex = LCD_ReadPoint(LCD0, x,y);	
+		}
+		else
+		{
+			PixelIndex = LCD_ReadPoint(LCD1, x,y);
+		}
     }
     #if (LCD_MIRROR_X == 0) && (LCD_MIRROR_Y == 0) && (LCD_SWAP_XY == 0)
       #undef xPhys

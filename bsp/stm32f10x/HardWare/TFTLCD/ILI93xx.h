@@ -30,11 +30,11 @@ typedef struct
 	vu16 LCD_RAM;
 } LCD_TypeDef;
 
-//使用NOR/SRAM的 Bank1.sector2,地址位HADDR[27,26]=01 A0作为数据命令区分线 
+//使用NOR/SRAM的 Bank1 A0作为数据命令区分线 
 //注意设置时STM32内部会右移一位对其! 			    
-#define LCD0_BASE        ((u32)(0x64000000 | 0x00000000))
+#define LCD0_BASE     ((u32)(0x64000000 | 0x00000000))
 #define LCD0          ((LCD_TypeDef *) LCD0_BASE)
-#define LCD1_BASE        ((u32)(0x64000000 | 0x00000000))
+#define LCD1_BASE     ((u32)(0x68000000 | 0x00000000))
 #define LCD1          ((LCD_TypeDef *) LCD1_BASE)
 	 
 //扫描方向定义

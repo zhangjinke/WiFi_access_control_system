@@ -53,6 +53,11 @@
 #include "spi_bus.h"
 #endif  /* RT_USING_SPI */
 
+#ifdef  STemWin
+static rt_uint8_t emwin_stack[ 8192 ];	//线程栈
+static struct rt_thread emwin_thread; 	//线程控制块
+#endif  /* STemWin */
+
 #ifdef  EmWin_Demo
 static rt_uint8_t emwin_demo_stack[ 8192 ];	//线程栈
 static struct rt_thread emwin_demo_thread; 	//线程控制块
@@ -92,19 +97,51 @@ static void touch_screen_thread_entry(void* parameter)
 * 输出     	: None
 * 返回值    : None
 *******************************************************************************/
-#ifdef  EmWin_Demo
-static void emwin_demo_thread_entry(void* parameter)
+#ifdef  STemWin
+static void emwin_thread_entry(void* parameter)
 {	
 	WM_SetCreateFlags(WM_CF_MEMDEV);
 	GUI_Init();  			//STemWin初始化
-	GUI_DispString("hello world");
+	
+	GUI_Exec();
+	/* Draw something on default layer 0 */
+	GUI_SetBkColor(GUI_GREEN);
+	GUI_Clear();
+	GUI_DispStringHCenterAt("Layer 0", 100, 46);
+	/* Draw something on layer 1 */
+	GUI_SelectLayer(1); /* Select layer 1 */
+	GUI_SetBkColor(GUI_RED);
+	GUI_Clear();
+	GUI_SetColor(GUI_BLUE);
+	GUI_FillRect(20, 20, 179, 79);
+	GUI_SetColor(GUI_WHITE);
+	GUI_SetTextMode(GUI_TM_TRANS);
+	GUI_DispStringHCenterAt("Layer 1", 100, 46);	
+	while(1)
+	{
+		GUI_Delay(100);
+	}	
+}
+#endif  /* STemWin */
+
+/*******************************************************************************
+* 函数名 	: emwin_demo_thread_entry
+* 描述   	: emwin_demo线程
+* 输入     	: - parameter: 线程入口参数
+* 输出     	: None
+* 返回值    : None
+*******************************************************************************/
+#ifdef  EmWin_Demo
+static void emwin_demo_thread_entry(void* parameter)
+{	
+	rt_thread_delayMs(10);
 	while(1)
 	{
 		#ifdef  EmWin_Demo
 		#include "GUIDEMO.h"
 		GUIDEMO_Main();	
 		#endif  /* EmWin_Demo */
-		rt_thread_delayMs(5);
+		GUI_Delay(100);
 	}	
 }
 #endif  /* EmWin_Demo */
@@ -150,13 +187,29 @@ void user_init_thread_entry(void* parameter)
 	TFTLCD_Init();
 	POINT_COLOR = WHITE;
 	BACK_COLOR = BLACK;
-	LCD_ShowString(0,0,320,16,16,(u8 *)"WiFi Access Control System");
+	LCD_ShowString(LCD0,0,0,320,16,16,(u8 *)"WiFi Access Control System");
 #endif  /* TFT */
 
 #ifdef  TOUCH_SCREEN
 	/* 初始化触摸屏 */
-	TP_Init();
+	TP_Init(LCD0);
 #endif  /* TOUCH_SCREEN */
+		
+#ifdef  STemWin
+    /* 初始化emwin线程 */
+    result = rt_thread_init(&emwin_thread,
+                            "emwin",
+                            emwin_thread_entry,
+                            RT_NULL,
+                            (rt_uint8_t*)&emwin_stack[0],
+                            sizeof(emwin_stack),
+                            18,
+                            5);
+    if (result == RT_EOK)
+    {
+        rt_thread_startup(&emwin_thread);
+    }
+#endif  /* STemWin */
 		
 #ifdef  EmWin_Demo
     /* 初始化emwin demo线程 */

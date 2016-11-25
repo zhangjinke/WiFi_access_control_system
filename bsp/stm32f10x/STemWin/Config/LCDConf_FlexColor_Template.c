@@ -40,12 +40,16 @@
 void LCD_X_Config(void)
 {
 	GUI_DEVICE_CreateAndLink(&GUIDRV_Template_API, GUICC_M565, 0, 0); //创建显示驱动器件
-	LCD_SetSizeEx    (0, lcddev.width, lcddev.height);
-	LCD_SetVSizeEx   (0, lcddev.width, lcddev.height);
-	if(lcddev.dir == 0) //竖屏
+	LCD_SetSizeEx    (0, lcddev0.width, lcddev0.height);
+	LCD_SetVSizeEx   (0, lcddev0.width, lcddev0.height);
+	
+	GUI_DEVICE_CreateAndLink(&GUIDRV_Template_API, GUICC_M565, 0, 1); //创建显示驱动器件
+	LCD_SetSizeEx    (1, lcddev0.width, lcddev0.height);
+	LCD_SetVSizeEx   (1, lcddev0.width, lcddev0.height);
+	if(lcddev0.dir == 0) //竖屏
 	{					
-		GUI_TOUCH_Calibrate(GUI_COORD_X,0,lcddev.width,155,3903);
-		GUI_TOUCH_Calibrate(GUI_COORD_Y,0,lcddev.height,188,3935);
+		GUI_TOUCH_Calibrate(GUI_COORD_X,0,lcddev0.width,155,3903);
+		GUI_TOUCH_Calibrate(GUI_COORD_Y,0,lcddev0.height,188,3935);
 	}else //横屏
 	{
 		GUI_TOUCH_SetOrientation(GUI_SWAP_XY|GUI_MIRROR_Y); 

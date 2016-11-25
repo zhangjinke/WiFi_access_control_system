@@ -54,7 +54,7 @@ extern void TP_Adjust(LCD_TypeDef *TFTLCD);							//触摸屏校准
 extern void TP_Adj_Info_Show(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u16 fac);//显示校准信息
 //电阻屏/电容屏 共用函数
 extern u8 TP_Scan(u8 tp);								//扫描
-extern u8 TP_Init(void);								//初始化
+extern u8 TP_Init(LCD_TypeDef *TFTLCD);								//初始化
  
 #endif
 

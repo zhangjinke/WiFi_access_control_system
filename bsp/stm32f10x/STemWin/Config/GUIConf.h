@@ -1,7 +1,7 @@
 #ifndef GUICONF_H
 #define GUICONF_H
 
-#define GUI_NUM_LAYERS            (2)   // 显示的最大层数
+#define GUI_NUM_LAYERS            (2)  // 显示的最大层数
 
 #define GUI_OS                    (1)  // 使用操作系统
 #define GUI_MAXTASK				  (5)  // 最大可调用EMWIN任务数

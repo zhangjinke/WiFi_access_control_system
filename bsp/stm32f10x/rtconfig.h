@@ -204,7 +204,7 @@
 #define TFT
 #define TOUCH_SCREEN
 #define STemWin
-#define EmWin_Demo
+//#define EmWin_Demo
 
 #define RC522
 
