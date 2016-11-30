@@ -4,18 +4,6 @@
 #include "GUIDRV_Template.h"
 #include "GUIDRV_FlexColor.h"
 
-//与触摸屏有关定义，根据实际情况填写
-#define TOUCH_AD_TOP		160  	//按下触摸屏的顶部，写下 Y 轴模拟输入值。
-#define TOUCH_AD_BOTTOM		3990 	//按下触摸屏的底部，写下 Y 轴模拟输入值。
-#define TOUCH_AD_LEFT 		160		//按下触摸屏的左侧，写下 X 轴模拟输入值。
-#define TOUCH_AD_RIGHT		3990	//按下触摸屏的右侧，写下 X 轴模拟输入值。
-
-//屏幕大小
-#define XSIZE_PHYS  320 //X轴
-#define YSIZE_PHYS  240 //Y轴
-#define VXSIZE_PHYS	320 
-#define VYSIZE_PHYS 240
-
 //配置检查
 #ifndef   VXSIZE_PHYS
   #define VXSIZE_PHYS XSIZE_PHYS
@@ -46,16 +34,6 @@ void LCD_X_Config(void)
 	GUI_DEVICE_CreateAndLink(&GUIDRV_Template_API, GUICC_M565, 0, 1); //创建显示驱动器件
 	LCD_SetSizeEx    (1, lcddev0.width, lcddev0.height);
 	LCD_SetVSizeEx   (1, lcddev0.width, lcddev0.height);
-	if(lcddev0.dir == 0) //竖屏
-	{					
-		GUI_TOUCH_Calibrate(GUI_COORD_X,0,lcddev0.width,155,3903);
-		GUI_TOUCH_Calibrate(GUI_COORD_Y,0,lcddev0.height,188,3935);
-	}else //横屏
-	{
-		GUI_TOUCH_SetOrientation(GUI_SWAP_XY|GUI_MIRROR_Y); 
-		GUI_TOUCH_Calibrate(GUI_COORD_X,240,0,155,3903); 	
-		GUI_TOUCH_Calibrate(GUI_COORD_Y,320,0,188,3935);
-	}
 }
 
 

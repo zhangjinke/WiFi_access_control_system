@@ -2,7 +2,13 @@
 #define __LCD_H		
 #include "sys.h"	 
 #include "stdlib.h"
-  
+
+//屏幕大小
+#define XSIZE_PHYS  320 //X轴
+#define YSIZE_PHYS  240 //Y轴
+#define VXSIZE_PHYS	320 
+#define VYSIZE_PHYS 240
+ 
 //LCD重要参数集
 typedef struct  
 {										    
@@ -32,9 +38,9 @@ typedef struct
 
 //使用NOR/SRAM的 Bank1 A0作为数据命令区分线 
 //注意设置时STM32内部会右移一位对其! 			    
-#define LCD0_BASE     ((u32)(0x64000000 | 0x00000000))
+#define LCD0_BASE     ((u32)(0x68000000 | 0x00000000)) /* 门外液晶 */
 #define LCD0          ((LCD_TypeDef *) LCD0_BASE)
-#define LCD1_BASE     ((u32)(0x68000000 | 0x00000000))
+#define LCD1_BASE     ((u32)(0x64000000 | 0x00000000)) /* 门内液晶 */
 #define LCD1          ((LCD_TypeDef *) LCD1_BASE)
 	 
 //扫描方向定义
@@ -94,23 +100,6 @@ void LCD_ShowChar(LCD_TypeDef *TFTLCD, u16 x,u16 y,u8 num,u8 size,u8 mode);					
 void LCD_ShowNum(LCD_TypeDef *TFTLCD, u16 x,u16 y,u32 num,u8 len,u8 size);  						//显示一个数字
 void LCD_ShowxNum(LCD_TypeDef *TFTLCD, u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode);				//显示 数字
 void LCD_ShowString(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p);		//显示一个字符串,12/16字体
-
-//LCD分辨率设置
-#define SSD_HOR_RESOLUTION		800		//LCD水平分辨率
-#define SSD_VER_RESOLUTION		480		//LCD垂直分辨率
-//LCD驱动参数设置
-#define SSD_HOR_PULSE_WIDTH		1		//水平脉宽
-#define SSD_HOR_BACK_PORCH		210		//水平前廊
-#define SSD_HOR_FRONT_PORCH		45		//水平后廊
-
-#define SSD_VER_PULSE_WIDTH		1		//垂直脉宽
-#define SSD_VER_BACK_PORCH		34		//垂直前廊
-#define SSD_VER_FRONT_PORCH		10		//垂直前廊
-//如下几个参数，自动计算
-#define SSD_HT	(SSD_HOR_RESOLUTION+SSD_HOR_PULSE_WIDTH+SSD_HOR_BACK_PORCH+SSD_HOR_FRONT_PORCH)
-#define SSD_HPS	(SSD_HOR_PULSE_WIDTH+SSD_HOR_BACK_PORCH)
-#define SSD_VT 	(SSD_VER_PULSE_WIDTH+SSD_VER_BACK_PORCH+SSD_VER_FRONT_PORCH+SSD_VER_RESOLUTION)
-#define SSD_VPS (SSD_VER_PULSE_WIDTH+SSD_VER_BACK_PORCH)
 
 #endif  
 	 

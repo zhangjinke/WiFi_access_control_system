@@ -49,12 +49,12 @@ void GUI_TOUCH_X_ActivateY(void)
 
 int  GUI_TOUCH_X_MeasureX(void) 
 {
-	return TP_Read_XOY(0XD0);  //CMD_RDX=0XD0
+	return TP_Read_XOY(LCD0, 0XD0);  //CMD_RDX=0XD0
 }
 
 int  GUI_TOUCH_X_MeasureY(void) 
 {	
-	return TP_Read_XOY(0X90);  //CMD_RDX=0XD0
+	return TP_Read_XOY(LCD0, 0X90);  //CMD_RDX=0XD0
 }
 
 

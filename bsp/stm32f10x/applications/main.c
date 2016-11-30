@@ -36,6 +36,8 @@
 #ifdef  STemWin
 #include "GUI.h"
 #include "WM.h"
+
+#include "WindowDLG.h"
 #endif  /* STemWin */
 
 #ifdef  RT_USING_SDIO
@@ -79,11 +81,46 @@ static struct rt_thread touch_screen_thread; 	//线程控制块
 *******************************************************************************/
 #ifdef  TOUCH_SCREEN
 static void touch_screen_thread_entry(void* parameter)
-{	
+{
+	GUI_PID_STATE State0, State1;
+	u16 touch_x0 = 0, touch_x1 = 0;
+	u16 touch_y0 = 0, touch_y1 = 0;
 	while(1)
 	{
 		#ifdef  STemWin
-		GUI_TOUCH_Exec();
+//		GUI_TOUCH_Exec();
+		if (tp_irq0 == 0)
+		{
+			TP_Read_XY(LCD0, &touch_x0, &touch_y0);
+			
+	 		State0.x = tp_dev0.xfac*touch_x0+tp_dev0.xoff;//将结果转换为屏幕坐标
+			State0.y = tp_dev0.yfac*touch_y0+tp_dev0.yoff;  
+			State0.Pressed = 1;
+			State0.Layer = 0;
+			GUI_TOUCH_StoreStateEx(&State0);
+		}
+		else
+		{
+			State0.Pressed = 0;
+			State0.Layer = 0;	
+			GUI_TOUCH_StoreStateEx(&State0);
+		}
+		if (tp_irq1 == 0)
+		{
+			TP_Read_XY(LCD1, &touch_x1, &touch_y1);
+
+	 		State1.x = tp_dev1.xfac*touch_x1+tp_dev1.xoff;//将结果转换为屏幕坐标
+			State1.y = tp_dev1.yfac*touch_y1+tp_dev1.yoff;  
+			State1.Pressed = 1;
+			State1.Layer = 1;
+			GUI_TOUCH_StoreStateEx(&State1);
+		}
+		else
+		{
+			State1.Pressed = 0;
+			State1.Layer = 1;	
+			GUI_TOUCH_StoreStateEx(&State1);
+		}
 		#endif  /* STemWin */
 		rt_thread_delayMs(10);
 	}	
@@ -103,22 +140,12 @@ static void emwin_thread_entry(void* parameter)
 	WM_SetCreateFlags(WM_CF_MEMDEV);
 	GUI_Init();  			//STemWin初始化
 	
-	GUI_Exec();
-	/* Draw something on default layer 0 */
-	GUI_SetBkColor(GUI_GREEN);
-	GUI_Clear();
-	GUI_DispStringHCenterAt("Layer 0", 100, 46);
-	/* Draw something on layer 1 */
-	GUI_SelectLayer(1); /* Select layer 1 */
-	GUI_SetBkColor(GUI_RED);
-	GUI_Clear();
-	GUI_SetColor(GUI_BLUE);
-	GUI_FillRect(20, 20, 179, 79);
-	GUI_SetColor(GUI_WHITE);
-	GUI_SetTextMode(GUI_TM_TRANS);
-	GUI_DispStringHCenterAt("Layer 1", 100, 46);	
+//	GUI_Exec();
+	gui_init();
+	
 	while(1)
 	{
+		GUI_SelectLayer(1);
 		GUI_Delay(100);
 	}	
 }
@@ -192,7 +219,7 @@ void user_init_thread_entry(void* parameter)
 
 #ifdef  TOUCH_SCREEN
 	/* 初始化触摸屏 */
-	TP_Init(LCD0);
+	TP_Init();
 #endif  /* TOUCH_SCREEN */
 		
 #ifdef  STemWin

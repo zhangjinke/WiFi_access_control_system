@@ -3,6 +3,12 @@
 #include "sys.h"
 #include "ILI93xx.h"
 
+//与触摸屏有关定义，根据实际情况填写
+#define TOUCH_AD_TOP		160  	//按下触摸屏的顶部，写下 Y 轴模拟输入值。
+#define TOUCH_AD_BOTTOM		3990 	//按下触摸屏的底部，写下 Y 轴模拟输入值。
+#define TOUCH_AD_LEFT 		160		//按下触摸屏的左侧，写下 X 轴模拟输入值。
+#define TOUCH_AD_RIGHT		3990	//按下触摸屏的右侧，写下 X 轴模拟输入值。
+
 #define TP_PRES_DOWN 0x80  		//触屏被按下	  
 #define TP_CATH_PRES 0x40  		//有按键按下了 
 #define CT_MAX_TOUCH  5    		//电容屏支持的点数,固定为5点
@@ -11,8 +17,8 @@
 typedef struct 
 {
 	u8 (*init)(void);			//初始化触摸屏控制器
-	u8 (*scan)(u8);				//扫描触摸屏.0,屏幕扫描;1,物理坐标;	 
-	void (*adjust)(void);		//触摸屏校准 
+	u8 (*scan)(LCD_TypeDef *TFTLCD, u8);				//扫描触摸屏.0,屏幕扫描;1,物理坐标;	 
+	void (*adjust)(LCD_TypeDef *TFTLCD);		//触摸屏校准 
 	u16 x[CT_MAX_TOUCH]; 		//当前坐标
 	u16 y[CT_MAX_TOUCH];		//电容屏有最多5组坐标,电阻屏则用x[0],y[0]代表:此次扫描时,触屏的坐标,用
 								//x[4],y[4]存储第一次按下时的坐标. 
@@ -35,42 +41,28 @@ typedef struct
 	u8 touchtype;
 }_m_tp_dev;
 
-extern _m_tp_dev tp_dev;	 	//触屏控制器在touch.c里面定义
+extern _m_tp_dev tp_dev0;	 	//触屏控制器在touch.c里面定义
+extern _m_tp_dev tp_dev1;	 	//触屏控制器在touch.c里面定义
 
-//电阻/电容屏芯片连接引脚	   
-#define PEN  		PBin(6)  	//PB6 INT
+//电阻屏芯片连接引脚	   
+#define tp_irq0  		PBin(7)  	/* 门外触摸屏 */
+#define tp_irq1  		PBin(6)  	/* 门内触摸屏 */
    
 //电阻屏函数
-extern void TP_Write_Byte(u8 num);						//向控制芯片写入一个数据
-extern u16 TP_Read_AD(u8 CMD);							//读取AD转换值
-extern u16 TP_Read_XOY(u8 xy);							//带滤波的坐标读取(X/Y)
-extern u8 TP_Read_XY(u16 *x,u16 *y);					//双方向读取(X+Y)
-extern u8 TP_Read_XY2(u16 *x,u16 *y);					//带加强滤波的双方向坐标读取
+extern void TP_Write_Byte(LCD_TypeDef *TFTLCD, u8 num);						//向控制芯片写入一个数据
+extern u16 TP_Read_AD(LCD_TypeDef *TFTLCD, u8 CMD);							//读取AD转换值
+extern u16 TP_Read_XOY(LCD_TypeDef *TFTLCD, u8 xy);							//带滤波的坐标读取(X/Y)
+extern u8 TP_Read_XY(LCD_TypeDef *TFTLCD, u16 *x,u16 *y);					//双方向读取(X+Y)
+extern u8 TP_Read_XY2(LCD_TypeDef *TFTLCD, u16 *x,u16 *y);					//带加强滤波的双方向坐标读取
 extern void TP_Drow_Touch_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color);//画一个坐标校准点
 extern void TP_Draw_Big_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color);	//画一个大点
-extern void TP_Save_Adjdata(void);						//保存校准参数
-extern u8 TP_Get_Adjdata(void);						//读取校准参数
+extern void TP_Save_Adjdata(LCD_TypeDef *TFTLCD);						//保存校准参数
+extern u8 TP_Get_Adjdata(LCD_TypeDef *TFTLCD);						//读取校准参数
 extern void TP_Adjust(LCD_TypeDef *TFTLCD);							//触摸屏校准
 extern void TP_Adj_Info_Show(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u16 fac);//显示校准信息
 //电阻屏/电容屏 共用函数
-extern u8 TP_Scan(u8 tp);								//扫描
-extern u8 TP_Init(LCD_TypeDef *TFTLCD);								//初始化
+extern u8 TP_Scan(LCD_TypeDef *TFTLCD, u8 tp);								//扫描
+extern u8 TP_Init(void);								//初始化
  
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
