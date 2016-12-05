@@ -10,7 +10,7 @@ __packed struct wifi_pack
 	u8   dst[6];			/* 目标地址 */
 	u8   src[6];			/* 源地址 */
 	u8   cmd;				/* 命令 */
-	u16  lenth;			    /* 长度 */
+	u16  lenth;			    /* 数据长度 */
 	u8  *data;				/* 数据 */
 };
 

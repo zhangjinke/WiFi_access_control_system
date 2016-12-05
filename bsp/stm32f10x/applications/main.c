@@ -88,10 +88,9 @@ static void touch_screen_thread_entry(void* parameter)
 	while(1)
 	{
 		#ifdef  STemWin
-//		GUI_TOUCH_Exec();
 		if (tp_irq0 == 0)
 		{
-			TP_Read_XY(LCD0, &touch_x0, &touch_y0);
+			TP_Read_XY(LCD0, &touch_y0, &touch_x0);
 			
 	 		State0.x = tp_dev0.xfac*touch_x0+tp_dev0.xoff;//将结果转换为屏幕坐标
 			State0.y = tp_dev0.yfac*touch_y0+tp_dev0.yoff;  
@@ -107,7 +106,7 @@ static void touch_screen_thread_entry(void* parameter)
 		}
 		if (tp_irq1 == 0)
 		{
-			TP_Read_XY(LCD1, &touch_x1, &touch_y1);
+			TP_Read_XY(LCD1, &touch_y1, &touch_x1);
 
 	 		State1.x = tp_dev1.xfac*touch_x1+tp_dev1.xoff;//将结果转换为屏幕坐标
 			State1.y = tp_dev1.yfac*touch_y1+tp_dev1.yoff;  
@@ -214,7 +213,7 @@ void user_init_thread_entry(void* parameter)
 	TFTLCD_Init();
 	POINT_COLOR = WHITE;
 	BACK_COLOR = BLACK;
-	LCD_ShowString(LCD0,0,0,320,16,16,(u8 *)"WiFi Access Control System");
+	LCD_ShowString(LCD1,0,0,320,16,16,(u8 *)"WiFi Access Control System");
 #endif  /* TFT */
 
 #ifdef  TOUCH_SCREEN

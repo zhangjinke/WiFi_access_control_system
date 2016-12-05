@@ -279,6 +279,7 @@ void LCD_Display_Dir(LCD_TypeDef *TFTLCD, u8 dir)
 //在其他型号的驱动芯片上没有测试! 
 void TFTLCD_Init(void)
 {
+	_lcd_dev *lcddev = 0;
 	LCD_TypeDef *TFTLCD = 0;	
  	GPIO_InitTypeDef GPIO_InitStructure;
 	FSMC_NORSRAMInitTypeDef  FSMC_NORSRAMInitStructure;
@@ -361,14 +362,16 @@ void TFTLCD_Init(void)
 		if (i == 0)
 		{
 			TFTLCD = LCD0;
+			lcddev = &lcddev0;
 		}
 		else
 		{
 			TFTLCD = LCD1;
+			lcddev = &lcddev1;
 		}
 		
-		lcddev0.id=LCD_ReadReg(LCD0, 0x0000);	//读ID（9320/9325/9328/4531/4535等IC）   
-		if(lcddev0.id==0x9328)//ILI9328   OK  
+		lcddev->id=LCD_ReadReg(TFTLCD, 0x0000);	//读ID（9320/9325/9328/4531/4535等IC）   
+		if(lcddev->id==0x9328)//ILI9328   OK  
 		{
 			LCD_WriteReg(TFTLCD, 0x00EC,0x108F);// internal timeing      
 			LCD_WriteReg(TFTLCD, 0x00EF,0x1234);// ADD        
