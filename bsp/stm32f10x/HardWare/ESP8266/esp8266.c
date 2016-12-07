@@ -157,9 +157,9 @@ s8 WriteTest(u32 lenth)
 }
 FINSH_FUNCTION_EXPORT(WriteTest, WiFiWriteTest)
 
-u8 recv_pack[1024*5];
-u8 is_recv_pack = 0;
-u32 recv_lenth = 0;
+u8  recv_pack[1024*5]; /* 接收缓冲区 */
+u32 recv_lenth = 0;    /* 接收到的包长度 */
+u8  is_recv_pack = 0;  /* 是否接收到数据包 0: 未接受 1: 已接受 */
 /*******************************************************************************
 * 函数名 	: esp8266_spi_read
 * 描述   	: SPI接收函数, 由接收线程调用, 禁止其它地方调用
@@ -180,7 +180,7 @@ s8 esp8266_spi_read(void)
 	if (is_recv_pack == 0)
 	{
 		/* 搜索首包 */
-		if (( buf[0] & start_bit) == start_bit)
+		if ((buf[0] & start_bit) == start_bit)
 		{
 			i = 0;
 			is_recv_pack = 0;
@@ -192,7 +192,7 @@ s8 esp8266_spi_read(void)
 		if (isReceive)
 		{
 			recv_lenth += buf[0] & 0x3f;                    /* 记录接收到的字节数 */
-			if (( buf[0] & end_bit) == end_bit)             /* 判断是否收到末包 */
+			if ((buf[0] & end_bit) == end_bit)              /* 判断是否收到末包 */
 			{
 				for (i = 0; i < (buf[0] & 0x3f); i++)
 				{

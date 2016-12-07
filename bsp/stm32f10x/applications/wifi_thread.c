@@ -67,12 +67,14 @@ void wifi_thread_entry(void* parameter)
 					if (wifi_pack_recv.lenth + par_lenth != recv_lenth)
 					{
 						is_recv_pack = 0; /* 重新等待接收数据 */
+						rt_kprintf("lenth verify failed\r\n");
 						continue;
 					}
 					/* CRC校验 */
 					if (wifi_pack_recv.crc != CalcBlockCRC(recv_pack + crc_lenth, par_lenth - crc_lenth + wifi_pack_recv.lenth))
 					{
 						is_recv_pack = 0; /* 重新等待接收数据 */
+						rt_kprintf("crc verify failed\r\n");
 						continue;
 					}
 					
@@ -93,7 +95,7 @@ void wifi_thread_entry(void* parameter)
 	}	
 }
 
-s8 wifi_send(u8 dst[6], u8 cmd, u16 data_lenth, u8 *data)
+s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data)
 {
 	struct wifi_pack wifi_pack_send;
 	u8 *send_pack = NULL;
@@ -109,8 +111,6 @@ s8 wifi_send(u8 dst[6], u8 cmd, u16 data_lenth, u8 *data)
         return -RT_ENOMEM;
     }
 
-	rt_memcpy(&wifi_pack_send.dst, dst, 6);  /* 目标地址 */
-	rt_memset(&wifi_pack_send.src, 0xAA, 6); /* 源地址 */
 	wifi_pack_send.cmd = cmd;                /* 命令 */
 	wifi_pack_send.lenth = data_lenth;       /* 数据长度 */
 	/* 将除CRC之外的其它参数拷贝到缓冲区 */
@@ -136,14 +136,12 @@ s8 sendTest(u32 lenth)
 {
 	u8 buf[1024*5];
 	int i;
-	u8 dst[6];
 	
 	for (i = 0; i < lenth; i++)
 	{
 		buf[i] = (u8)i;
 	}
-	rt_memset(dst, 0x55, 6);
 	
-	return wifi_send(dst, 3, lenth, buf);
+	return wifi_send(3, lenth, buf);
 }
 FINSH_FUNCTION_EXPORT(sendTest, sendTest)

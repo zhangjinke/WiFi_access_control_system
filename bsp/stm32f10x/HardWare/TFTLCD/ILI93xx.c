@@ -327,7 +327,7 @@ void TFTLCD_Init(void)
     
 	writeTiming.FSMC_AddressSetupTime = 0x00;	 //地址建立时间（ADDSET）为1个HCLK  
     writeTiming.FSMC_AddressHoldTime = 0x00;	 //地址保持时间（A		
-    writeTiming.FSMC_DataSetupTime = 0x03;		 ////数据保存时间为4个HCLK	
+    writeTiming.FSMC_DataSetupTime = 0x03;		 //数据保存时间为4个HCLK	
     writeTiming.FSMC_BusTurnAroundDuration = 0x00;
     writeTiming.FSMC_CLKDivision = 0x00;
     writeTiming.FSMC_DataLatency = 0x00;
