@@ -16,6 +16,7 @@
 #include "wifi_thread.h"
 #include "esp8266.h"
 #include "stm32_crc.h"
+#include "esp8266_cmd.h"
 
 /* 获取结构体成员偏移宏定义 */
 #define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
@@ -26,6 +27,7 @@
 rt_uint8_t wifi_stack[ 1024 ];	//线程栈
 struct rt_thread wifi_thread; 	//线程控制块
 struct wifi_pack wifi_pack_recv;
+u8 is_recv_wifi_pack = 0;
 
 /*******************************************************************************
 * 函数名 	: wifi_thread_entry
@@ -79,14 +81,30 @@ void wifi_thread_entry(void* parameter)
 					}
 					
 					wifi_pack_recv.data = recv_pack + par_lenth;
+					is_recv_wifi_pack = 1;
 					
-					rt_kprintf("cmd: %d, lenth: %d, crc: %08X\r\n", wifi_pack_recv.cmd, wifi_pack_recv.lenth, wifi_pack_recv.crc);
+//					rt_kprintf("cmd: %d, lenth: %d, crc: %08X\r\n", wifi_pack_recv.cmd, wifi_pack_recv.lenth, wifi_pack_recv.crc);
+//					
+//					for (i = 0; i < wifi_pack_recv.lenth; i++)
+//					{
+//						rt_kprintf("%02X ", *(wifi_pack_recv.data + i));				
+//					}
+//					rt_kprintf("\r\n");	
 					
-					for (i = 0; i < wifi_pack_recv.lenth; i++)
+					if (wifi_pack_recv.cmd == cmd_send_data_to_mcu)
 					{
-						rt_kprintf("%02X ", *(wifi_pack_recv.data + i));				
+						struct mesh_header_format *header = NULL;
+						header = (struct mesh_header_format *)wifi_pack_recv.data;
+						if (header->oe == 0)
+						{
+							rt_kprintf("len: %d, data_len: %d\r\n", header->len, header->len - ESP_MESH_HEAD_SIZE);
+//							for (i = 0; i<header->len - ESP_MESH_HEAD_SIZE; i++)
+//							{
+//								rt_kprintf("%02X ", header->user_data[i]);
+//							}
+//							rt_kprintf("\r\n");
+						}
 					}
-						rt_kprintf("\r\n");	
 					
 					is_recv_pack = 0; /* 重新等待接收数据 */
 				}
@@ -132,7 +150,7 @@ s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data)
 	return 0;
 }
 
-s8 sendTest(u32 lenth)
+s8 sendTest(u8 cmd, u32 lenth)
 {
 	u8 buf[1024*5];
 	int i;
@@ -142,6 +160,6 @@ s8 sendTest(u32 lenth)
 		buf[i] = (u8)i;
 	}
 	
-	return wifi_send(3, lenth, buf);
+	return wifi_send(cmd, lenth, buf);
 }
 FINSH_FUNCTION_EXPORT(sendTest, sendTest)

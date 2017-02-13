@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;drivers;HardWare;HardWare\BEEP_DOOR;HardWare\DS1307;HardWare\ESP8266;HardWare\PWM;HardWare\RFID;HardWare\SOFT_IIC;HardWare\SPI;HardWare\SRAM;HardWare\TFTLCD;Libraries\STM32F10x_StdPeriph_Driver\inc;Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\components\CMSIS\Include;..\..\include;..\..\libcpu\arm\cortex-m3;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\elmfat;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh</IncludePath>
+              <IncludePath>applications;.;drivers;HardWare;HardWare\BEEP_DOOR;HardWare\DS1307;HardWare\ESP8266;HardWare\RFID;HardWare\SOFT_IIC;HardWare\SPI;HardWare\SRAM;Libraries\STM32F10x_StdPeriph_Driver\inc;Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\components\CMSIS\Include;..\..\include;..\..\libcpu\arm\cortex-m3;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\elmfat;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -522,9 +522,9 @@
               <FilePath>HardWare\ESP8266\esp8266.c</FilePath>
             </File>
             <File>
-              <FileName>pwm.c</FileName>
+              <FileName>esp8266_cmd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>HardWare\PWM\pwm.c</FilePath>
+              <FilePath>HardWare\ESP8266\esp8266_cmd.c</FilePath>
             </File>
             <File>
               <FileName>rc522.c</FileName>
@@ -545,11 +545,6 @@
               <FileName>sram.c</FileName>
               <FileType>1</FileType>
               <FilePath>HardWare\SRAM\sram.c</FilePath>
-            </File>
-            <File>
-              <FileName>ILI93xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>HardWare\TFTLCD\ILI93xx.c</FilePath>
             </File>
           </Files>
         </Group>

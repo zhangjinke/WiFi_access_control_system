@@ -12,6 +12,7 @@
 2016.09.06  创建本文件
 *********************************************************************************************************/
 #include <rtthread.h>
+#include <stdint.h>
 
 #include <rfid_thread.h>
 #include <user_check_thread.h>

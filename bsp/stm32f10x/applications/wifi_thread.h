@@ -16,4 +16,9 @@ extern rt_uint8_t wifi_stack[ 1024 ];	//线程栈
 extern struct rt_thread wifi_thread; 	//线程控制块
 extern void wifi_thread_entry(void* parameter);
 
+extern struct wifi_pack wifi_pack_recv;
+extern u8 is_recv_wifi_pack;
+
+extern s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data);
+
 #endif
