@@ -104,7 +104,7 @@ uint32_t CRC_CalcCRC(uint32_t Data)
   * @param  BufferLength: length of the buffer to be computed					
   * @retval 32-bit CRC
   */
-uint32_t CRC_CalcBlockCRC(uint32_t pBuffer[], uint32_t BufferLength)
+uint32_t CRC_block_crc_calc(uint32_t pBuffer[], uint32_t BufferLength)
 {
   uint32_t index = 0;
   

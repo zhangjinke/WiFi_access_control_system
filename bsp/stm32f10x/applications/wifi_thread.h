@@ -19,6 +19,9 @@ extern void wifi_thread_entry(void* parameter);
 extern struct wifi_pack wifi_pack_recv;
 extern u8 is_recv_wifi_pack;
 
+extern uint8_t station_addr[6];
+extern uint8_t softap_addr[6];
+
 extern s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data);
 
 #endif

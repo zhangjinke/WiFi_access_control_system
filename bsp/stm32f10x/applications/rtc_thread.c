@@ -59,13 +59,19 @@ void rtc_thread_entry(void* parameter)
 	}	
 }
 
-/*******************************************************************************
-* 函数名 	: set_time
-* 描述   	: 设置系统时间
-* 输入     	: - 年月日时分秒星期
-* 输出     	: None
-* 返回值    : None
-*******************************************************************************/
+/**
+ * \brief 设置系统时间
+ *
+ * \param[in] year   年
+ * \param[in] month  月
+ * \param[in] date   日
+ * \param[in] hour   时
+ * \param[in] minute 分
+ * \param[in] second 秒
+ * \param[in] week   星期
+ *                   
+ * \return 无
+ */
 void set_time(u8 year, u8 month, u8 date, u8 hour, u8 minute, u8 second, u8 week)
 {
 	TimeValue.year = year;

@@ -79,6 +79,9 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate1[] = {
 // USER START (Optionally insert additional static code)
 // USER END
 
+/* ¿ªËø */
+extern void open_door(void);
+
 /*********************************************************************
 *
 *       _cbDialog
@@ -118,6 +121,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
+	  /* ¿ªËø */
+		open_door();
+
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

@@ -36,8 +36,8 @@ s8 wait_ack(u8 cmd)
 s8 test_hspi(void)
 {
 	is_recv_wifi_pack = 0;
-	wifi_send(cmd_return_recv, 0, 0);
-	if (wait_ack(cmd_return_recv) < 0)
+	wifi_send(CMD_RETURN_RECV, 0, 0);
+	if (wait_ack(CMD_RETURN_RECV) < 0)
 	{
 		return -1;
 	}
@@ -52,8 +52,8 @@ s8 get_sdk_version(u8 ver[], u16 *lenth)
 	if (!lenth) { return -1; }
 	
 	is_recv_wifi_pack = 0;
-	wifi_send(cmd_get_sdk_version, 0, 0);
-	if (wait_ack(cmd_get_sdk_version) < 0)
+	wifi_send(CMD_GET_SDK_VERSION, 0, 0);
+	if (wait_ack(CMD_GET_SDK_VERSION) < 0)
 	{
 		return -1;
 	}
@@ -69,8 +69,8 @@ s8 get_flash_size_map(u8 *flash_size_map)
 	if (!flash_size_map) { return -1; }
 	
 	is_recv_wifi_pack = 0;
-	wifi_send(cmd_get_flash_size_map, 0, 0);
-	if (wait_ack(cmd_get_flash_size_map) < 0)
+	wifi_send(CMD_GET_FLASH_SIZE_MAP, 0, 0);
+	if (wait_ack(CMD_GET_FLASH_SIZE_MAP) < 0)
 	{
 		return -1;
 	}
@@ -86,8 +86,8 @@ s8 wifi_get_ip_info(struct ip_info *station_ip, struct ip_info *ap_ip)
 	if (!ap_ip) { return -1; }
 	
 	is_recv_wifi_pack = 0;
-	wifi_send(cmd_wifi_get_ip_info, 0, 0);
-	if (wait_ack(cmd_wifi_get_ip_info) < 0)
+	wifi_send(CMD_WIFI_GET_IP_INFO, 0, 0);
+	if (wait_ack(CMD_WIFI_GET_IP_INFO) < 0)
 	{
 		return -1;
 	}
@@ -104,8 +104,8 @@ s8 wifi_get_macaddr(u8 station_mac[], u8 ap_mac[])
 	if (!ap_mac) { return -1; }
 	
 	is_recv_wifi_pack = 0;
-	wifi_send(cmd_wifi_get_macaddr, 0, 0);
-	if (wait_ack(cmd_wifi_get_macaddr) < 0)
+	wifi_send(CMD_WIFI_GET_MACADDR, 0, 0);
+	if (wait_ack(CMD_WIFI_GET_MACADDR) < 0)
 	{
 		return -1;
 	}
@@ -121,8 +121,8 @@ s8 get_device_list(struct mesh_device_list_type *g_node_list)
 	if (!g_node_list) { return -1; }
 	
 	is_recv_wifi_pack = 0;
-	wifi_send(cmd_get_device_list, 0, 0);
-	if (wait_ack(cmd_get_device_list) < 0)
+	wifi_send(CMD_GET_DEVICE_LIST, 0, 0);
+	if (wait_ack(CMD_GET_DEVICE_LIST) < 0)
 	{
 		return -1;
 	}

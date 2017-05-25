@@ -17,6 +17,7 @@
 #include "esp8266.h"
 #include "stm32_crc.h"
 #include "esp8266_cmd.h"
+#include "server_process.h"
 
 /* 获取结构体成员偏移宏定义 */
 #define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
@@ -28,6 +29,9 @@ rt_uint8_t wifi_stack[ 1024 ];	//线程栈
 struct rt_thread wifi_thread; 	//线程控制块
 struct wifi_pack wifi_pack_recv;
 u8 is_recv_wifi_pack = 0;
+
+uint8_t station_addr[6];
+uint8_t softap_addr[6];
 
 /*******************************************************************************
 * 函数名 	: wifi_thread_entry
@@ -42,13 +46,14 @@ void wifi_thread_entry(void* parameter)
 	rt_uint32_t recved_event = 0; /* 收到的事件 */
 	static u32 par_lenth = sizeof(struct wifi_pack) - MEMBER_SIZE(wifi_pack, data); /* 包中的参数大小 */
 	static u32 crc_lenth = MEMBER_SIZE(wifi_pack, crc); /* CRC大小 */
-	u32 i = 0;
+	struct mesh_header_format *header = NULL;
 	
-	/* 初始化ESP8266 */
-	init_esp8266();
+	memset(station_addr, 0, sizeof(station_addr));
+	memset(softap_addr, 0, sizeof(softap_addr));
+	
 	while(1)
 	{
-		/* 等待刷卡或刷指纹事件 */
+		/* 等待接收事件 */
 		status = rt_event_recv(	&esp8266_event,                       /* 事件对象的句柄 */
 								hspi_rx,                              /* 接收线程感兴趣的事件 */
 								RT_EVENT_FLAG_CLEAR|RT_EVENT_FLAG_OR, /* 逻辑或、清除事件 */
@@ -73,7 +78,7 @@ void wifi_thread_entry(void* parameter)
 						continue;
 					}
 					/* CRC校验 */
-					if (wifi_pack_recv.crc != CalcBlockCRC(recv_pack + crc_lenth, par_lenth - crc_lenth + wifi_pack_recv.lenth))
+					if (wifi_pack_recv.crc != block_crc_calc(recv_pack + crc_lenth, par_lenth - crc_lenth + wifi_pack_recv.lenth))
 					{
 						is_recv_pack = 0; /* 重新等待接收数据 */
 						rt_kprintf("crc verify failed\r\n");
@@ -91,19 +96,30 @@ void wifi_thread_entry(void* parameter)
 //					}
 //					rt_kprintf("\r\n");	
 					
-					if (wifi_pack_recv.cmd == cmd_send_data_to_mcu)
-					{
-						struct mesh_header_format *header = NULL;
+					switch (wifi_pack_recv.cmd) {
+					
+					case CMD_SEND_DATA_TO_MCU:
 						header = (struct mesh_header_format *)wifi_pack_recv.data;
 						if (header->oe == 0)
 						{
-							rt_kprintf("len: %d, data_len: %d\r\n", header->len, header->len - ESP_MESH_HEAD_SIZE);
-//							for (i = 0; i<header->len - ESP_MESH_HEAD_SIZE; i++)
-//							{
-//								rt_kprintf("%02X ", header->user_data[i]);
-//							}
-//							rt_kprintf("\r\n");
+							data_process(header->user_data[0], header->user_data + 1, header->len - ESP_MESH_HEAD_SIZE - 1);
 						}
+						
+						break;
+					
+					case CMD_WIFI_GET_MACADDR:
+						if (12 == wifi_pack_recv.lenth) {
+							memcpy(station_addr, wifi_pack_recv.data, 6);
+							memcpy(softap_addr, wifi_pack_recv.data + 6, 6);
+						} else {
+							rt_kprintf("%s", wifi_pack_recv.data);
+						}
+						
+						break;
+						
+					default:
+						break;
+					
 					}
 					
 					is_recv_pack = 0; /* 重新等待接收数据 */
@@ -136,7 +152,7 @@ s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data)
 	/* 将数据拷贝到缓冲区 */
 	rt_memcpy(send_pack + par_lenth, data, data_lenth);
 	/* 计算CRC */
-	wifi_pack_send.crc = CalcBlockCRC(send_pack + crc_lenth, par_lenth - crc_lenth + data_lenth);
+	wifi_pack_send.crc = block_crc_calc(send_pack + crc_lenth, par_lenth - crc_lenth + data_lenth);
 	/* 将CRC拷贝到缓冲区 */
 	rt_memcpy(send_pack, &wifi_pack_send, crc_lenth);
 	/* 发送数据 */
@@ -163,3 +179,10 @@ s8 sendTest(u8 cmd, u32 lenth)
 	return wifi_send(cmd, lenth, buf);
 }
 FINSH_FUNCTION_EXPORT(sendTest, sendTest)
+
+s8 sendServer()
+{
+	u8 data[] = "\x00\x00\x00\x00\x00\x00Hello World";
+	return wifi_send(CMD_SEND_MESH_DATA, sizeof(data), data);
+}
+FINSH_FUNCTION_EXPORT(sendServer, sendServer)

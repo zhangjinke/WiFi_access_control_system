@@ -15,21 +15,22 @@
 #include "stm32_crc.h"
 #include "stm32f10x_crc.h"
 
-/*******************************************************************************
-* 函数名 	: CalcBlockCRC
-* 描述   	: 计算CRC
-* 输入     	: - pBuffer: 需要被计算的数据 - BufferLength: 需要计算的字节数
-* 输出     	: None
-* 返回值    : 计算结果
-*******************************************************************************/
-u32 CalcBlockCRC(u8 pBuffer[], u32 BufferLength)
+/**
+ * \brief 计算CRC
+ *
+ * \param[in] p_data : 需要被计算的数据
+ * \param[in] lenth  : 需要计算的字节数
+ *
+ * \return 计算结果
+ */
+u32 block_crc_calc (u8 p_data[], u32 lenth)
 {
 	u32 index = 0;
 	
 	CRC_ResetDR(); /* 复位CRC */
-	for(index = 0; index < BufferLength; index++)
+	for(index = 0; index < lenth; index++)
 	{
-		CRC->DR = pBuffer[index];
+		CRC->DR = p_data[index];
 	}
 	return (CRC->DR);
 }

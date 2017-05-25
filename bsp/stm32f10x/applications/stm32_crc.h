@@ -17,6 +17,14 @@
 
 #include <sys.h>
 
-extern u32 CalcBlockCRC(u8 pBuffer[], u32 BufferLength);
+/**
+ * \brief 计算CRC
+ *
+ * \param[in] p_data : 需要被计算的数据
+ * \param[in] lenth  : 需要计算的字节数
+ *
+ * \return 计算结果
+ */
+u32 block_crc_calc (u8 p_data[], u32 lenth);
 
 #endif

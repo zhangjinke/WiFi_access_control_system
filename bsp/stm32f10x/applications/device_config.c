@@ -72,7 +72,7 @@ s8 init_device_config(void)
 			read(fd, &device_config_t, sizeof(struct device_config));
 			
 			/* 计算CRC */
-			crc = CalcBlockCRC((u8 *)(&device_config_t), sizeof(struct device_config) - 4);
+			crc = block_crc_calc((u8 *)(&device_config_t), sizeof(struct device_config) - 4);
 			if (crc != device_config_t.crc)
 			{
 				cfg_printf("device config crc validators fail, init device config\r\n");
@@ -80,7 +80,7 @@ s8 init_device_config(void)
 				device_config_t.device_addr = 0;
 				rt_memset(device_config_t.this_device_name, 0, MEMBER_SIZE(device_config, this_device_name));
 				/* 计算CRC */
-				device_config_t.crc = CalcBlockCRC((u8 *)(&device_config_t), sizeof(struct device_config) - 4);
+				device_config_t.crc = block_crc_calc((u8 *)(&device_config_t), sizeof(struct device_config) - 4);
 				
 				/* 移动文件指针到指定位置 */
 				if (lseek(fd, 0, SEEK_SET) == -1)
@@ -160,7 +160,7 @@ s8 get_set_device_config(struct device_config *device_config_t, u8 cmd)
 				else
 				{
 					close(fd);
-					if (device_config_t->crc == CalcBlockCRC((u8 *)device_config_t, sizeof(struct device_config) - 4))
+					if (device_config_t->crc == block_crc_calc((u8 *)device_config_t, sizeof(struct device_config) - 4))
 					{
 						cfg_printf("get device config addr is %d, name is %s success\r\n",device_config_t->device_addr, device_config_t->this_device_name);
 					}
@@ -174,7 +174,7 @@ s8 get_set_device_config(struct device_config *device_config_t, u8 cmd)
 			else if (cmd == 1)
 			{
 				/* 计算CRC */
-				device_config_t->crc = CalcBlockCRC((u8 *)device_config_t, sizeof(struct device_config) - 4);
+				device_config_t->crc = block_crc_calc((u8 *)device_config_t, sizeof(struct device_config) - 4);
 				/* 写入考勤记录总条数 */
 				if (write(fd, device_config_t, sizeof(struct device_config)) != sizeof(struct device_config))
 				{

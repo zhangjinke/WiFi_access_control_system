@@ -38,7 +38,7 @@ struct card_id_struct card_id_array[MAX_USER_NUM];
 * 输出     	: None
 * 返回值    : -1: 未搜索到 其它: 数据所在数组的下标
 *******************************************************************************/
-int bin_search(struct card_id_struct sSource[], int array_size, int key)  
+int bin_search (struct card_id_struct sSource[], int array_size, int key)  
 {     
     int low = 0, high = array_size - 1, mid;  
       
@@ -63,7 +63,7 @@ int bin_search(struct card_id_struct sSource[], int array_size, int key)
 * 输出     	: None
 * 返回值    : None
 *******************************************************************************/
-void quik_sort(struct card_id_struct card_id_array[],int low,int high)
+void quik_sort (struct card_id_struct card_id_array[],int low,int high)
 {
 	int i = low;
 	int j = high;  
@@ -243,7 +243,7 @@ s8 get_set_user_num_max(u16 *user_num_max, u8 cmd)
 * 输出     	: None
 * 返回值    : -1: 失败 0: 成功
 *******************************************************************************/
-s8 add_del_get_one_user(struct user_info *one_user_info, u8 cmd)
+s8 add_del_get_one_user (struct user_info *one_user_info, u8 cmd)
 {
 	int fd;
 

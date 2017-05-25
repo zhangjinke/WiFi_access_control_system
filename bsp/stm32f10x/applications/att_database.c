@@ -75,7 +75,7 @@ s8 init_att_database(void)
 			read(fd, &att_header_t, sizeof(struct att_header));
 			
 			/* 计算CRC */
-			crc = CalcBlockCRC((u8 *)(&att_header_t), sizeof(struct att_header) - 4);
+			crc = block_crc_calc((u8 *)(&att_header_t), sizeof(struct att_header) - 4);
 			if (crc != att_header_t.crc)
 			{
 				att_printf("att header crc validators fail, init att database\r\n");
@@ -83,7 +83,7 @@ s8 init_att_database(void)
 				att_header_t.total = 0;
 				att_header_t.not_upload = 0;
 				/* 计算CRC */
-				att_header_t.crc = CalcBlockCRC((u8 *)(&att_header_t), sizeof(struct att_header) - 4);
+				att_header_t.crc = block_crc_calc((u8 *)(&att_header_t), sizeof(struct att_header) - 4);
 				
 				/* 移动文件指针到指定位置 */
 				if (lseek(fd, 0, SEEK_SET) == -1)
@@ -163,7 +163,7 @@ s8 get_set_record_header(struct att_header *att_header_t, u8 cmd)
 				else
 				{
 					close(fd);
-					if (att_header_t->crc == CalcBlockCRC((u8 *)att_header_t, sizeof(struct att_header) - 4))
+					if (att_header_t->crc == block_crc_calc((u8 *)att_header_t, sizeof(struct att_header) - 4))
 					{
 						att_printf("get record header total is %d, not_upload is %d success\r\n",att_header_t->total, att_header_t->not_upload);
 					}
@@ -177,7 +177,7 @@ s8 get_set_record_header(struct att_header *att_header_t, u8 cmd)
 			else if (cmd == 1)
 			{
 				/* 计算CRC */
-				att_header_t->crc = CalcBlockCRC((u8 *)att_header_t, sizeof(struct att_header) - 4);
+				att_header_t->crc = block_crc_calc((u8 *)att_header_t, sizeof(struct att_header) - 4);
 				/* 写入考勤记录总条数 */
 				if (write(fd, att_header_t, sizeof(struct att_header)) != sizeof(struct att_header))
 				{
@@ -255,7 +255,7 @@ s8 get_set_att_record(struct att_info *one_att_info, u8 cmd)
 					else
 					{
 						close(fd);
-						if (one_att_info->crc == CalcBlockCRC((u8 *)one_att_info, sizeof(struct att_info) - 4))
+						if (one_att_info->crc == block_crc_calc((u8 *)one_att_info, sizeof(struct att_info) - 4))
 						{
 							att_printf("get att record %d success\r\n", one_att_info->record_id);			
 						}
@@ -270,7 +270,7 @@ s8 get_set_att_record(struct att_info *one_att_info, u8 cmd)
 				case 1:
 				{
 					/* 计算CRC */
-					one_att_info->crc = CalcBlockCRC((u8 *)one_att_info, sizeof(struct att_info) - 4);
+					one_att_info->crc = block_crc_calc((u8 *)one_att_info, sizeof(struct att_info) - 4);
 					/* 写入 */
 					if (write(fd, one_att_info, sizeof(struct att_info)) != sizeof(struct att_info))
 					{

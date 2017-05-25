@@ -25,6 +25,7 @@
 #include "device_config.h"
 #include "esp8266.h"
 #include "beep_door.h"
+#include "esp8266_cmd.h"
 
 #ifdef  TOUCH_SCREEN
 #include "touch_screen.h"
@@ -221,7 +222,10 @@ void user_init_thread_entry(void* parameter)
 	/* 初始化触摸屏 */
 	TP_Init();
 #endif  /* TOUCH_SCREEN */
-		
+
+	/* 初始化ESP8266 */
+	init_esp8266();
+
 #ifdef  STemWin
     /* 初始化emwin线程 */
     result = rt_thread_init(&emwin_thread,
@@ -331,4 +335,9 @@ void user_init_thread_entry(void* parameter)
     }
 	
 	void rt_exit_critical(void); /* 退出临界区*/
+	
+	
+	if (0 != wifi_get_macaddr(station_addr, softap_addr)) {
+		rt_kprintf("wifi get macaddr failed\r\n");
+	}
 }
