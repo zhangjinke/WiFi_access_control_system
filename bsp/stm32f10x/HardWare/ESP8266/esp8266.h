@@ -3,7 +3,8 @@
 
 #include "sys.h"
 
-#define hspi_rx         (1 << 0) //hspi接收事件
+#define HSPI_RX         (1 << 0) //hspi接收事件
+#define INIT_OK         (1 << 1) //esp8266初始化完成事件
 
 #define ESP8266_EN      PCout(5) //ESP8266 EN
 #define ESP8266_RST     PBout(0) //ESP8266 RST

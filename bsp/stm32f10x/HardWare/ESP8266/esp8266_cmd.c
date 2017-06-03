@@ -9,36 +9,37 @@
 struct wifi_pack wifi_pack_send;
 struct mesh_device_list_type g_node_list;
 
-s8 wait_ack(u8 cmd)
+s8 wait_ack (u8 cmd)
 {
 	u32 time = 1000;
-	while(1)
-	{
-		if (is_recv_wifi_pack == 1) 
-		{ 
+	while(1) {
+		if (is_recv_wifi_pack == 1) { 
 			is_recv_wifi_pack = 0;
 			break; 
 		}
 		rt_thread_delayMs(1);
 		time--;
-		if (time == 0) { return -1; }
+		if (time == 0) { 
+            return -1; 
+        }
 	}
-	if (wifi_pack_recv.cmd != cmd) { return -2; }
-	if ((wifi_pack_recv.data[0] == 'e')&&(wifi_pack_recv.data[1] == 'r')&&
-		(wifi_pack_recv.data[2] == 'r'))
-	{
+	if (wifi_pack_recv.cmd != cmd) { 
+        return -2;
+    }
+	if ((wifi_pack_recv.data[0] == 'e')&&
+        (wifi_pack_recv.data[1] == 'r')&&
+		(wifi_pack_recv.data[2] == 'r')) {
 		return -3;
 	}
 	
 	return 0;
 }
 
-s8 test_hspi(void)
+s8 test_hspi (void)
 {
 	is_recv_wifi_pack = 0;
 	wifi_send(CMD_RETURN_RECV, 0, 0);
-	if (wait_ack(CMD_RETURN_RECV) < 0)
-	{
+	if (wait_ack(CMD_RETURN_RECV) < 0) {
 		return -1;
 	}
 	
@@ -46,15 +47,14 @@ s8 test_hspi(void)
 }
 FINSH_FUNCTION_EXPORT(test_hspi, test_hspi)
 
-s8 get_sdk_version(u8 ver[], u16 *lenth)
+s8 get_sdk_version (u8 ver[], u16 *lenth)
 {
 	if (!ver) { return -1; }
 	if (!lenth) { return -1; }
 	
 	is_recv_wifi_pack = 0;
 	wifi_send(CMD_GET_SDK_VERSION, 0, 0);
-	if (wait_ack(CMD_GET_SDK_VERSION) < 0)
-	{
+	if (wait_ack(CMD_GET_SDK_VERSION) < 0) {
 		return -1;
 	}
 	rt_memcpy(ver, wifi_pack_recv.data, wifi_pack_recv.lenth);
@@ -64,14 +64,13 @@ s8 get_sdk_version(u8 ver[], u16 *lenth)
 	return 0;
 }
 
-s8 get_flash_size_map(u8 *flash_size_map)
+s8 get_flash_size_map (u8 *flash_size_map)
 {
 	if (!flash_size_map) { return -1; }
 	
 	is_recv_wifi_pack = 0;
 	wifi_send(CMD_GET_FLASH_SIZE_MAP, 0, 0);
-	if (wait_ack(CMD_GET_FLASH_SIZE_MAP) < 0)
-	{
+	if (wait_ack(CMD_GET_FLASH_SIZE_MAP) < 0) {
 		return -1;
 	}
 	if (wifi_pack_recv.lenth != 1) { return -3; }
@@ -80,7 +79,7 @@ s8 get_flash_size_map(u8 *flash_size_map)
 	return 0;
 }
 
-s8 wifi_get_ip_info(struct ip_info *station_ip, struct ip_info *ap_ip)
+s8 wifi_get_ip_info (struct ip_info *station_ip, struct ip_info *ap_ip)
 {
 	if (!station_ip) { return -1; }
 	if (!ap_ip) { return -1; }
@@ -98,16 +97,18 @@ s8 wifi_get_ip_info(struct ip_info *station_ip, struct ip_info *ap_ip)
 	return 0;
 }
 
-s8 wifi_get_macaddr(u8 station_mac[], u8 ap_mac[])
+s8 wifi_get_macaddr (u8 station_mac[], u8 ap_mac[])
 {
+    s8 recv = 0;
+    
 	if (!station_mac) { return -1; }
 	if (!ap_mac) { return -1; }
 	
 	is_recv_wifi_pack = 0;
 	wifi_send(CMD_WIFI_GET_MACADDR, 0, 0);
-	if (wait_ack(CMD_WIFI_GET_MACADDR) < 0)
+	if ((recv = wait_ack(CMD_WIFI_GET_MACADDR)) < 0)
 	{
-		return -1;
+		return recv;
 	}
 	if (wifi_pack_recv.lenth != 12) { return -3; }
 	rt_memcpy(station_mac, wifi_pack_recv.data, 6);
@@ -116,7 +117,7 @@ s8 wifi_get_macaddr(u8 station_mac[], u8 ap_mac[])
 	return 0;
 }
 
-s8 get_device_list(struct mesh_device_list_type *g_node_list)
+s8 get_device_list (struct mesh_device_list_type *g_node_list)
 {
 	if (!g_node_list) { return -1; }
 	
@@ -134,7 +135,109 @@ s8 get_device_list(struct mesh_device_list_type *g_node_list)
 	return 0;
 }
 
-void esp8266_cmd_test()
+s8 server_addr_set (uint8_t *ip, uint16_t port)
+{
+    uint8_t buf[6];
+    
+	if (!ip) { return -1; }
+	
+    rt_memcpy(buf + 0, ip, 4);
+    rt_memcpy(buf + 4, &port, 2);
+    
+	is_recv_wifi_pack = 0;
+	wifi_send(CMD_SERVER_ADDR_SET, 6, buf);
+	if (wait_ack(CMD_SERVER_ADDR_SET) < 0)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+s8 mesh_group_id_set (uint8_t *id)
+{
+	if (!id) { return -1; }
+	    
+	is_recv_wifi_pack = 0;
+	wifi_send(CMD_MESH_GROUP_ID_SET, 6, id);
+	if (wait_ack(CMD_MESH_GROUP_ID_SET) < 0)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+s8 router_set (uint8_t *ssid, uint8_t *passwd, uint8_t auth, uint8_t *mac)
+{
+	if (!ssid) { return -1; }
+	if (!passwd) { return -1; }
+	if (!mac) { return -1; }
+	
+    uint32_t lenth = (32 + 1) + (256 + 1) + (1) + (6);
+    uint8_t *buf = rt_malloc(lenth);
+    if (RT_NULL == buf) {
+        rt_kprintf("router_set malloc %d byte failed\r\n", lenth);
+        return -1;
+    }
+    
+    rt_memcpy(buf + 0,                    ssid,   32 + 1);
+    rt_memcpy(buf + 32 + 1,               passwd, 256 + 1);
+    rt_memcpy(buf + 32 + 1 + 256 + 1,    &auth,   1);
+    rt_memcpy(buf + 32 + 1 + 256 + 1 + 1, mac,    6);
+
+	is_recv_wifi_pack = 0;
+	wifi_send(CMD_ROUTER_SET, lenth, buf);
+	if (wait_ack(CMD_ROUTER_SET) < 0)
+	{
+        rt_free(buf);
+		return -1;
+	}
+
+    rt_free(buf);
+	return 0;
+}
+
+s8 mesh_wifi_set (uint8_t *ssid, uint8_t *passwd)
+{
+	if (!ssid) { return -1; }
+	if (!passwd) { return -1; }
+	
+    uint32_t lenth = (32 + 1) + (256 + 1);
+    uint8_t *buf = rt_malloc(lenth);
+    if (RT_NULL == buf) {
+        rt_kprintf("mesh_wifi_set malloc %d byte failed\r\n", lenth);
+        return -1;
+    }
+    
+    rt_memcpy(buf + 0,      ssid,   32 + 1);
+    rt_memcpy(buf + 32 + 1, passwd, 256 + 1);
+
+	is_recv_wifi_pack = 0;
+	wifi_send(CMD_MESH_WIFI_SET, lenth, buf);
+	if (wait_ack(CMD_MESH_WIFI_SET) < 0)
+	{
+        rt_free(buf);
+		return -1;
+	}
+
+    rt_free(buf);
+	return 0;
+}
+
+s8 mesh_init (void)
+{
+	is_recv_wifi_pack = 0;
+	wifi_send(CMD_MESH_INIT, 0, 0);
+	if (wait_ack(CMD_MESH_INIT) < 0)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+void esp8266_cmd_test ()
 {
 	int idx = 0;
 	u8 ver[10];
@@ -142,16 +245,35 @@ void esp8266_cmd_test()
 	u8 flash_size_map = 0, *flash_size_map_str;
 	struct ip_info station_ip, ap_ip;
 	u8 station_mac[6], ap_mac[6];
+    
+    uint8_t  sever_ip[] = {192, 168, 0, 102};
+    uint16_t sever_port = 2756;
+    
+    uint8_t  group_id[] = {0x18, 0xfe, 0x34, 0x00, 0x00, 0x55};
 
-	if (test_hspi()) { rt_kprintf("test_hspi failed\r\n"); }
-	else  { rt_kprintf("test_hspi success\r\n"); }
+    static uint8_t router_ssid[32 + 1] = "FAST_CC12--2lou";
+    static uint8_t router_passwd[256 + 1] = "";
+    static uint8_t router_auth = AUTH_OPEN;
+    static uint8_t router_bssid[6] = {0x16, 0x27, 0x1e, 0x08, 0xf2, 0x66};
+
+    static uint8_t mesh_ssid[32 + 1] = "MESH_PEACE";
+    static uint8_t mesh_passwd[256 + 1] = "zzzzzzzzy";
+
+	if (test_hspi()) { 
+		rt_kprintf("%s", wifi_pack_recv.data);
+    } else { 
+        rt_kprintf("test_hspi success\r\n"); 
+    }
 	
-	if (get_sdk_version(ver, &len)) { rt_kprintf("get_sdk_version failed\r\n"); }
-	else  { rt_kprintf("get_sdk_version:%s ver_len:%d\r\n", ver, len); }
+	if (get_sdk_version(ver, &len)) { 
+		rt_kprintf("%s", wifi_pack_recv.data);
+    } else { 
+        rt_kprintf("get_sdk_version:%s ver_len:%d\r\n", ver, len); 
+    }
 	
-	if (get_flash_size_map(&flash_size_map)) { rt_kprintf("get_flash_size_map failed\r\n"); }
-	else
-	{
+	if (get_flash_size_map(&flash_size_map)) { 
+		rt_kprintf("%s", wifi_pack_recv.data);
+    } else {
 		switch(flash_size_map)
 		{
 			case 0: { flash_size_map_str = (u8 *)"FLASH_SIZE_4M_MAP_256_256"; } break;
@@ -166,9 +288,9 @@ void esp8266_cmd_test()
 		rt_kprintf("get_flash_size_map:%d  %s\r\n", flash_size_map, flash_size_map_str);
 	}
 	
-	if (wifi_get_ip_info(&station_ip, &ap_ip)) { rt_kprintf("wifi_get_ip_info failed\r\n"); }
-	else
-	{
+	if (wifi_get_ip_info(&station_ip, &ap_ip)) { 
+		rt_kprintf("%s", wifi_pack_recv.data);
+    } else {
 		rt_kprintf("station_ip:%d.%d.%d.%d  mask:%d.%d.%d.%d  gw:%d.%d.%d.%d\r\n", 
 					station_ip.ip[0], station_ip.ip[1], station_ip.ip[2], station_ip.ip[3],
 					station_ip.netmask[0], station_ip.netmask[1], station_ip.netmask[2], station_ip.netmask[3],
@@ -181,16 +303,16 @@ void esp8266_cmd_test()
 		);
 	}
 	
-	if (wifi_get_macaddr(station_mac, ap_mac)) { rt_kprintf("wifi_get_macaddr failed\r\n"); }
-	else
-	{
+	if (wifi_get_macaddr(station_mac, ap_mac)) { 
+		rt_kprintf("%s", wifi_pack_recv.data);
+    } else {
 		rt_kprintf("station_mac: %02x:%02x:%02x:%02x:%02x:%02x\r\n", station_mac[0], station_mac[1], station_mac[2], station_mac[3], station_mac[4], station_mac[5]);
 		rt_kprintf("softap_mac:  %02x:%02x:%02x:%02x:%02x:%02x\r\n", ap_mac[0], ap_mac[1], ap_mac[2], ap_mac[3], ap_mac[4], ap_mac[5]);
 	}
 	
-	if (get_device_list(&g_node_list)) { rt_kprintf("get_device_list failed\r\n"); }
-	else
-	{
+	if (get_device_list(&g_node_list)) { 
+		rt_kprintf("%s", wifi_pack_recv.data);
+    } else {
 		rt_kprintf("=====mac list info=====\r\n");
 		rt_kprintf("root: " MACSTR "\r\n", MAC2STR(g_node_list.root.mac));
 		if (g_node_list.scale >= 2)
@@ -199,6 +321,41 @@ void esp8266_cmd_test()
 				rt_kprintf("idx:%d, " MACSTR "\r\n", idx, MAC2STR(g_node_list.list[idx].mac));
 		}
 		rt_kprintf("=====mac list end======\r\n");
+	}
+    
+    /* 设置服务器IP与端口 */
+	if (server_addr_set(sever_ip,sever_port)) { 
+        rt_kprintf("server_addr_set failed\r\n"); 
+    } else {
+		rt_kprintf("%s", wifi_pack_recv.data);
+	}
+    
+    /* 设置MESH组ID */
+	if (mesh_group_id_set(group_id)) { 
+        rt_kprintf("mesh_group_id_set failed\r\n"); 
+    } else {
+		rt_kprintf("%s", wifi_pack_recv.data);
+	}
+    
+    /* 设置路由器信息 */
+	if (router_set(router_ssid, router_passwd, router_auth, router_bssid)) { 
+        rt_kprintf("router_set failed\r\n"); 
+    } else {
+		rt_kprintf("%s", wifi_pack_recv.data);
+	}
+    
+    /* 设置MESH网络信息 */
+	if (mesh_wifi_set(mesh_ssid, mesh_passwd)) { 
+        rt_kprintf("mesh_wifi_set failed\r\n"); 
+    } else {
+		rt_kprintf("%s", wifi_pack_recv.data);
+	}
+    
+    /* 初始化MESH */
+	if (mesh_init()) { 
+        rt_kprintf("mesh_init failed\r\n"); 
+    } else {
+		rt_kprintf("%s", wifi_pack_recv.data);
 	}
 }
 void cmd_test()

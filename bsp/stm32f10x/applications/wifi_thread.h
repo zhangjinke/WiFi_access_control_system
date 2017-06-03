@@ -14,6 +14,8 @@ __packed struct wifi_pack
 
 extern rt_uint8_t wifi_stack[ 1024 ];	//线程栈
 extern struct rt_thread wifi_thread; 	//线程控制块
+extern rt_thread_t gp_esp8266_info_get_tid; /**< \brief 指向线程控制块的指针 */
+
 extern void wifi_thread_entry(void* parameter);
 
 extern struct wifi_pack wifi_pack_recv;
@@ -22,6 +24,15 @@ extern u8 is_recv_wifi_pack;
 extern uint8_t station_addr[6];
 extern uint8_t softap_addr[6];
 
-extern s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data);
+s8 wifi_send(u8 cmd, u16 data_lenth, u8 *data);
+
+/*
+ * \brief 获取esp8266相关信息
+ *
+ * \param[in] p_parameter 线程入口参数
+ *
+ * \return 无
+ */
+void esp8266_info_get_entry (void *p_parameter);
 
 #endif

@@ -28,6 +28,7 @@
 
 /* 延时函数 */
 #define rt_thread_delayMs(x) rt_thread_delay(rt_tick_from_millisecond(x))
+
 /* 设置调试信息打印开关 */
 #ifdef printAttDebugInfo
 #define att_printf(fmt,args...) rt_kprintf(fmt, ##args)

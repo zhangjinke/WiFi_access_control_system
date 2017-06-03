@@ -429,7 +429,7 @@ void EXTI1_IRQHandler(void)
 		/* 从机更新发送缓存，主机可以读取 */
 		rd_rdy = 1;
 		/* 发送hspi接收事件 */
-		rt_event_send(&esp8266_event, hspi_rx);
+		rt_event_send(&esp8266_event, HSPI_RX);
 		/* 清除LINE4上的中断标志位 */
 		EXTI_ClearITPendingBit(EXTI_Line1);
 	}

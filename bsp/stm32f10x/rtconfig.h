@@ -201,9 +201,9 @@
 #define RT_USING_SPI2
 #define RT_USING_SPI3
 
-#define TFT
-#define TOUCH_SCREEN
-#define STemWin
+//#define TFT
+//#define TOUCH_SCREEN
+//#define STemWin
 //#define EmWin_Demo
 
 //#define RT_USING_RZM

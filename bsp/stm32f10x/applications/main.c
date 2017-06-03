@@ -317,8 +317,17 @@ void user_init_thread_entry(void* parameter)
     {
         rt_thread_startup(&wifi_thread);
     }
-	
-	void rt_exit_critical(void); /* 退出临界区*/
+    
+    /* 创建esp8266信息获取线程 */
+    gp_esp8266_info_get_tid = rt_thread_create("esp8266_info_get",
+                                               esp8266_info_get_entry, 
+                                               RT_NULL,
+                                               512, 
+                                               16, 
+                                               5);
+    if (gp_esp8266_info_get_tid != RT_NULL) {
+        rt_thread_startup(gp_esp8266_info_get_tid);
+    }
 	
     /* 初始化rtc线程 */
     result = rt_thread_init(&rtc_thread,
@@ -333,11 +342,6 @@ void user_init_thread_entry(void* parameter)
     {
         rt_thread_startup(&rtc_thread);
     }
-	
+	    
 	void rt_exit_critical(void); /* 退出临界区*/
-	
-	
-	if (0 != wifi_get_macaddr(station_addr, softap_addr)) {
-		rt_kprintf("wifi get macaddr failed\r\n");
-	}
 }

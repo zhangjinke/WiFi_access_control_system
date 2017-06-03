@@ -27,11 +27,37 @@
 
 rt_uint8_t wifi_stack[ 1024 ];	//线程栈
 struct rt_thread wifi_thread; 	//线程控制块
+
+rt_thread_t gp_esp8266_info_get_tid = RT_NULL; /**< \brief 指向线程控制块的指针 */
+
 struct wifi_pack wifi_pack_recv;
 u8 is_recv_wifi_pack = 0;
 
 uint8_t station_addr[6];
 uint8_t softap_addr[6];
+
+/*
+ * \brief 获取esp8266相关信息
+ *
+ * \param[in] p_parameter 线程入口参数
+ *
+ * \return 无
+ */
+void esp8266_info_get_entry (void *p_parameter)
+{
+    /* 等待wifi初始化完成 */
+    rt_thread_delay(1000);
+    
+	if (0 != wifi_get_macaddr(station_addr, softap_addr)) {
+		rt_kprintf("wifi get macaddr failed\r\n");
+	} else {
+        rt_kprintf("station mac:" MACSTR " softap mac:" MACSTR, 
+                   MAC2STR(station_addr), 
+                   MAC2STR(softap_addr));
+    }
+    
+    esp8266_cmd_test();
+}
 
 /*******************************************************************************
 * 函数名 	: wifi_thread_entry
@@ -55,7 +81,7 @@ void wifi_thread_entry(void* parameter)
 	{
 		/* 等待接收事件 */
 		status = rt_event_recv(	&esp8266_event,                       /* 事件对象的句柄 */
-								hspi_rx,                              /* 接收线程感兴趣的事件 */
+								HSPI_RX,                              /* 接收线程感兴趣的事件 */
 								RT_EVENT_FLAG_CLEAR|RT_EVENT_FLAG_OR, /* 逻辑或、清除事件 */
 								RT_WAITING_FOREVER,                   /* 永不超时 */
 								&recved_event                         /* 指向收到的事件 */
@@ -64,7 +90,7 @@ void wifi_thread_entry(void* parameter)
 		if(status == RT_EOK)
 		{
 			/* hspi接收事件 */
-			if (recved_event & hspi_rx)
+			if (recved_event & HSPI_RX)
 			{
 				/* hspi接收完成 */
 				if (esp8266_spi_read() == 0)
@@ -107,17 +133,18 @@ void wifi_thread_entry(void* parameter)
 						
 						break;
 					
-					case CMD_WIFI_GET_MACADDR:
-						if (12 == wifi_pack_recv.lenth) {
-							memcpy(station_addr, wifi_pack_recv.data, 6);
-							memcpy(softap_addr, wifi_pack_recv.data + 6, 6);
-						} else {
-							rt_kprintf("%s", wifi_pack_recv.data);
-						}
-						
-						break;
+//					case CMD_WIFI_GET_MACADDR:
+//						if (12 == wifi_pack_recv.lenth) {
+//							memcpy(station_addr, wifi_pack_recv.data, 6);
+//							memcpy(softap_addr, wifi_pack_recv.data + 6, 6);
+//						} else {
+//							rt_kprintf("%s", wifi_pack_recv.data);
+//						}
+//						
+//						break;
 						
 					default:
+//                        rt_kprintf("wifi_pack_recv.cmd: %d\r\n", wifi_pack_recv.cmd);
 						break;
 					
 					}
