@@ -45,20 +45,20 @@ _m_tp_dev tp_dev1=
 	0,	  	 		
 };
 //默认为touchtype=0的数据.
-u8 CMD_RDX=0XD0;
-u8 CMD_RDY=0X90;
+uint8_t CMD_RDX=0XD0;
+uint8_t CMD_RDY=0X90;
 
-u8 tp_readBuf[1],tp_writeBuf[1];
+uint8_t tp_readBuf[1],tp_writeBuf[1];
 //SPI读数据 
 //从触摸屏IC读取adc值
 //CMD:指令
 //返回值:读到的数据	   
-u16 TP_Read_AD(LCD_TypeDef *TFTLCD, u8 CMD)	  
+uint16_t TP_Read_AD(LCD_TypeDef *TFTLCD, uint8_t CMD)	  
 {
 	struct rt_spi_device *rt_spi_tp_device = TFTLCD==LCD0 ? rt_spi_tp0_device : rt_spi_tp1_device;
 	struct rt_spi_message *rt_spi_tp_message = TFTLCD==LCD0 ? &rt_spi_tp0_message : &rt_spi_tp1_message;
 
-	u16 Num=0;
+	uint16_t Num=0;
 	tp_writeBuf[0] = CMD;
 	rt_spi_tp_message->send_buf = tp_writeBuf;
 	rt_spi_tp_message->recv_buf = tp_readBuf;	//设置读写缓存
@@ -88,12 +88,12 @@ u16 TP_Read_AD(LCD_TypeDef *TFTLCD, u8 CMD)
 //返回值:读到的数据
 #define READ_TIMES 5 	//读取次数
 #define LOST_VAL 1	  	//丢弃值
-u16 TP_Read_XOY(LCD_TypeDef *TFTLCD, u8 xy)
+uint16_t TP_Read_XOY(LCD_TypeDef *TFTLCD, uint8_t xy)
 {
-	u16 i, j;
-	u16 buf[READ_TIMES];
-	u16 sum=0;
-	u16 temp;
+	uint16_t i, j;
+	uint16_t buf[READ_TIMES];
+	uint16_t sum=0;
+	uint16_t temp;
 	for(i=0;i<READ_TIMES;i++)buf[i] = TP_Read_AD(TFTLCD, xy);		 		    
 	for(i=0;i<READ_TIMES-1; i++)//排序
 	{
@@ -116,9 +116,9 @@ u16 TP_Read_XOY(LCD_TypeDef *TFTLCD, u8 xy)
 //最小值不能少于100.
 //x,y:读取到的坐标值
 //返回值:0,失败;1,成功。
-u8 TP_Read_XY(LCD_TypeDef *TFTLCD, u16 *x,u16 *y)
+uint8_t TP_Read_XY(LCD_TypeDef *TFTLCD, uint16_t *x,uint16_t *y)
 {
-	u16 xtemp,ytemp;			 	 		  
+	uint16_t xtemp,ytemp;			 	 		  
 	xtemp=TP_Read_XOY(TFTLCD, CMD_RDX);
 	ytemp=TP_Read_XOY(TFTLCD, CMD_RDY);	  												   
 	//if(xtemp<100||ytemp<100)return 0;//读数失败
@@ -132,11 +132,11 @@ u8 TP_Read_XY(LCD_TypeDef *TFTLCD, u16 *x,u16 *y)
 //x,y:读取到的坐标值
 //返回值:0,失败;1,成功。
 #define ERR_RANGE 50 //误差范围 
-u8 TP_Read_XY2(LCD_TypeDef *TFTLCD, u16 *x,u16 *y) 
+uint8_t TP_Read_XY2(LCD_TypeDef *TFTLCD, uint16_t *x,uint16_t *y) 
 {
-	u16 x1,y1;
- 	u16 x2,y2;
- 	u8 flag;    
+	uint16_t x1,y1;
+ 	uint16_t x2,y2;
+ 	uint8_t flag;    
     flag=TP_Read_XY(TFTLCD, &x1,&y1);   
     if(flag==0)return(0);
     flag=TP_Read_XY(TFTLCD, &x2,&y2);	   
@@ -155,7 +155,7 @@ u8 TP_Read_XY2(LCD_TypeDef *TFTLCD, u16 *x,u16 *y)
 //用来校准用的
 //x,y:坐标
 //color:颜色
-void TP_Drow_Touch_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
+void TP_Drow_Touch_Point(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint16_t color)
 {
 	POINT_COLOR=color;
 	LCD_DrawLine(TFTLCD, x-12,y,x+13,y);//横线
@@ -169,7 +169,7 @@ void TP_Drow_Touch_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
 //画一个大点(2*2的点)		   
 //x,y:坐标
 //color:颜色
-void TP_Draw_Big_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
+void TP_Draw_Big_Point(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint16_t color)
 {	    
 	POINT_COLOR=color;
 	LCD_DrawPoint(TFTLCD, x,y);//中心点 
@@ -182,7 +182,7 @@ void TP_Draw_Big_Point(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
 //tp:0,屏幕坐标;1,物理坐标(校准等特殊场合用)
 //返回值:当前触屏状态.
 //0,触屏无触摸;1,触屏有触摸
-u8 TP_Scan(LCD_TypeDef *TFTLCD, u8 tp)
+uint8_t TP_Scan(LCD_TypeDef *TFTLCD, uint8_t tp)
 {
 	_m_tp_dev *tp_dev;
 	volatile unsigned long  *tp_irq;
@@ -234,7 +234,7 @@ void TP_Save_Adjdata(LCD_TypeDef *TFTLCD)
 	int fd, size;
 	char buffer[14];
 	_m_tp_dev *tp_dev;
-	u8 start = TFTLCD==LCD0 ? 0 : 14;
+	uint8_t start = TFTLCD==LCD0 ? 0 : 14;
 	
 	if (TFTLCD == LCD0)
 	{
@@ -245,7 +245,7 @@ void TP_Save_Adjdata(LCD_TypeDef *TFTLCD)
 		tp_dev = &tp_dev1;
 	}
 	
-	rt_memcpy(buffer, (u8*)&tp_dev->xfac, 13);//将要写入的数据存入缓存
+	rt_memcpy(buffer, (uint8_t*)&tp_dev->xfac, 13);//将要写入的数据存入缓存
 	buffer[13] = 0x0A;//在最后，写0X0A标记校准过了
 	fd = open(file_name, O_RDWR|O_CREAT, 0);
 	if (fd >= 0)
@@ -272,13 +272,13 @@ void TP_Save_Adjdata(LCD_TypeDef *TFTLCD)
 //得到保存在EEPROM里面的校准值
 //返回值：1，成功获取数据
 //        0，获取失败，要重新校准
-u8 TP_Get_Adjdata(LCD_TypeDef *TFTLCD)
+uint8_t TP_Get_Adjdata(LCD_TypeDef *TFTLCD)
 {					  
-	u8 temp;
+	uint8_t temp;
 	int fd, size;
 	char buffer[14];
 	_m_tp_dev *tp_dev;
-	u8 start = TFTLCD==LCD0 ? 0 : 14;
+	uint8_t start = TFTLCD==LCD0 ? 0 : 14;
 	
 	if (TFTLCD == LCD0)
 	{
@@ -306,7 +306,7 @@ u8 TP_Get_Adjdata(LCD_TypeDef *TFTLCD)
 				temp = buffer[13];//读取标记字,看是否校准过！
 				if(temp==0X0A)//触摸屏已经校准过了			   
 				{
-					rt_memcpy((u8*)&tp_dev->xfac, buffer, 15);//获取之前保存的校准数据 
+					rt_memcpy((uint8_t*)&tp_dev->xfac, buffer, 15);//获取之前保存的校准数据 
 					if(tp_dev->touchtype)//X,Y方向与屏幕相反
 					{
 						CMD_RDX=0X90;
@@ -330,10 +330,10 @@ u8 TP_Get_Adjdata(LCD_TypeDef *TFTLCD)
 	return 0;
 }	 
 //提示字符串
-u8* const TP_REMIND_MSG_TBL="Please use the stylus click the cross on the screen.The cross will always move until the screen adjustment is completed.";
+uint8_t* const TP_REMIND_MSG_TBL="Please use the stylus click the cross on the screen.The cross will always move until the screen adjustment is completed.";
  					  
 //提示校准结果(各个参数)
-void TP_Adj_Info_Show(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u16 y2,u16 x3,u16 y3,u16 fac)
+void TP_Adj_Info_Show(LCD_TypeDef *TFTLCD, uint16_t x0,uint16_t y0,uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2,uint16_t x3,uint16_t y3,uint16_t fac)
 {
 	_lcd_dev *lcddev;
 	
@@ -371,12 +371,12 @@ void TP_Adj_Info_Show(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u16 x1,u16 y1,u16 x2,u1
 //得到四个校准参数
 void TP_Adjust(LCD_TypeDef *TFTLCD)
 {								 
-	u16 pos_temp[4][2];//坐标缓存值
-	u8  cnt=0;	
-	u16 d1,d2;
-	u32 tem1,tem2;
+	uint16_t pos_temp[4][2];//坐标缓存值
+	uint8_t  cnt=0;	
+	uint16_t d1,d2;
+	uint32_t tem1,tem2;
 	double fac; 	
-	u16 outtime=0;
+	uint16_t outtime=0;
 	_lcd_dev *lcddev;
 	_m_tp_dev *tp_dev;
 	
@@ -398,7 +398,7 @@ void TP_Adjust(LCD_TypeDef *TFTLCD)
 	POINT_COLOR=RED;//红色 
 	LCD_Clear(TFTLCD, WHITE);//清屏 	   
 	POINT_COLOR=BLACK;
-	LCD_ShowString(TFTLCD, 40,40,160,100,16,(u8*)TP_REMIND_MSG_TBL);//显示提示信息
+	LCD_ShowString(TFTLCD, 40,40,160,100,16,(uint8_t*)TP_REMIND_MSG_TBL);//显示提示信息
 	TP_Drow_Touch_Point(TFTLCD, 20,20,RED);//画点1 
 	tp_dev->sta=0;//消除触发信号 
 	tp_dev->xfac=0;//xfac用来标记是否校准过,所以校准之前必须清掉!以免错误	 
@@ -601,7 +601,7 @@ void tp0_attach_device()
 //触摸屏初始化  		    
 //返回值:0,没有进行校准
 //       1,进行过校准
-u8 TP_Init(void)
+uint8_t TP_Init(void)
 {
 	/* 在SPI3_BUS上附着触摸屏设备 */
 	tp0_attach_device();
@@ -629,7 +629,7 @@ u8 TP_Init(void)
 		rt_spi_configure(rt_spi_tp1_device, &cfg);
 	}
 	
-	for (u8 i = 0; i < 2; i++)
+	for (uint8_t i = 0; i < 2; i++)
 	{
 		LCD_TypeDef *TFTLCD = i==0 ? LCD0 : LCD1;
 		_m_tp_dev *tp_dev = i==0 ? &tp_dev0 : &tp_dev1;

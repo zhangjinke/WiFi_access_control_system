@@ -1,485 +1,501 @@
-/**--------------文件信息--------------------------------------------------------------------------------
-**
-** 文   件   名: att_database.c
-**
-** 创   建   人: 张进科
-**
-** 文件创建日期: 2016 年 11 月 03 日
-**
-** 描        述: 考勤信息数据库
+/*******************************************************************************
+*                        WiFi Access Control System
+*                       ----------------------------
+*                                  EE Bang
+*
+* Contact information:
+* web site:    http://www.cqutlab.cn/
+* e-mail:      799548861@qq.com
+*******************************************************************************/
 
-** 日志:
-2016.11.03  创建本文件
-*********************************************************************************************************/
+/**
+ * \file
+ * \brief 考勤信息数据库
+ *
+ * \internal
+ * \par Modification history
+ * - 1.00 16-11-03  zhangjinke, first implementation.
+ * \endinternal
+ */ 
+
+#include "att_database.h"
 
 #include <rtthread.h>
-#include "att_database.h"
-/* 文件系统相关头文件 */
 #include <dfs.h>
 #include <dfs_posix.h>
-
+#include <finsh.h>
+#include "global.h"
 #include "stm32_crc.h"
 
-#include "finsh.h"
 
-/* 获取结构体成员偏移宏定义 */
-#define OFFSET(Type, member) ( (u32)&(((struct Type*)0)->member) )
-#define MEMBER_SIZE(Type, member) sizeof(((struct Type*)0)->member)
-
-/* 延时函数 */
-#define rt_thread_delayMs(x) rt_thread_delay(rt_tick_from_millisecond(x))
-
-/* 设置调试信息打印开关 */
-#ifdef printAttDebugInfo
-#define att_printf(fmt,args...) rt_kprintf(fmt, ##args)
+/** \brief 设置调试信息打印开关 */
+#ifdef PRINT_ATT_DEBUG_INFO
+#define ATT_PRINTF(fmt,args...) rt_kprintf("ATT_PRINTF: "); rt_kprintf(fmt, ##args)
 #else
-#define att_printf(fmt,args...)
+#define ATT_PRINTF(fmt,args...)
 #endif
 
-/* 考勤信息数据库路径 */
-const char *attendance_database_path = "/save_io.bin";
-/* 考勤信息数据库header结构体 */
-struct att_header att_header_t;
+/** \brief 考勤信息数据库路径 */
+const char *gp_attendance_database_path = "/save_io.bin";
 
-/*******************************************************************************
-* 函数名 	: init_att_database
-* 描述   	: 初始化考勤数据库
-* 输入     	: None
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 init_att_database(void)
+/** \brief 考勤信息数据库header结构体 */
+att_header_t g_att_header;
+
+/**
+ * \brief 初始化考勤数据库
+ *
+ * \param[in] p_att_header 考勤信息头
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t att_database_init (att_header_t *p_att_header)
 {
-	int fd = -1;
-	u32 crc = 0;
-	
-	/* 打开人员信息数据库 */
-	fd = open(attendance_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		att_printf("open %s failed\r\n", attendance_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, 0, SEEK_SET) == -1)
-		{
-			att_printf("lseek %s failed\r\n", attendance_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			/* 获取考勤记录header信息 */
-			read(fd, &att_header_t, sizeof(struct att_header));
-			
-			/* 计算CRC */
-			crc = block_crc_calc((u8 *)(&att_header_t), sizeof(struct att_header) - 4);
-			if (crc != att_header_t.crc)
-			{
-				att_printf("att header crc validators fail, init att database\r\n");
-				/* 初始化考勤记录数据库 */
-				att_header_t.total = 0;
-				att_header_t.not_upload = 0;
-				/* 计算CRC */
-				att_header_t.crc = block_crc_calc((u8 *)(&att_header_t), sizeof(struct att_header) - 4);
-				
-				/* 移动文件指针到指定位置 */
-				if (lseek(fd, 0, SEEK_SET) == -1)
-				{
-					att_printf("lseek %s failed\r\n", attendance_database_path);
-					close(fd);
-					return -1;
-				}
-				/* 写入考勤记录总条数 */
-				if (write(fd, &att_header_t, sizeof(struct att_header)) != sizeof(struct att_header))
-				{
-					att_printf("write %s failed\r\n", attendance_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					att_printf("init att database success\r\n");			
-				}		
-			}
-			else
-			{
-				close(fd);
-			}
-		}
-	}
-	
-	return 0;
+    int32_t  fd  = -1;
+    uint32_t crc = 0;
+    
+    if (RT_NULL == p_att_header) {
+        return -1;
+    }
+    
+    /* 打开人员信息数据库 */
+    fd = open(gp_attendance_database_path, O_RDWR | O_CREAT, 0);
+    if (fd < 0) {
+        ATT_PRINTF("open %s failed\r\n", gp_attendance_database_path);
+        close(fd);
+        return -1;
+    } else {
+        
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, 0, SEEK_SET) == -1) {
+            ATT_PRINTF("lseek %s failed\r\n", gp_attendance_database_path);
+            close(fd);
+            return -1;
+        } else {
+            
+            /* 获取考勤记录header信息 */
+            read(fd, p_att_header, sizeof(att_header_t));
+            
+            /* 计算CRC */
+            crc = block_crc_calc((uint8_t *)p_att_header, sizeof(att_header_t) - 4);
+            if (crc != p_att_header->crc) {
+                ATT_PRINTF("att header crc validators fail, init att database\r\n");
+                
+                /* 初始化考勤记录数据库 */
+                p_att_header->total = 0;
+                
+                /* 计算CRC */
+                p_att_header->crc = block_crc_calc((uint8_t *)p_att_header, sizeof(att_header_t) - 4);
+                
+                /* 移动文件指针到指定位置 */
+                if (lseek(fd, 0, SEEK_SET) == -1) {
+                    ATT_PRINTF("lseek %s failed\r\n", gp_attendance_database_path);
+                    close(fd);
+                    return -1;
+                }
+                
+                /* 写入考勤记录总条数 */
+                if (write(fd, p_att_header, sizeof(att_header_t)) != sizeof(att_header_t)) {
+                    ATT_PRINTF("write %s failed\r\n", gp_attendance_database_path);
+                    close(fd);
+                    return -1;
+                } else {
+                    close(fd);
+                    ATT_PRINTF("init att database success\r\n");            
+                }        
+            } else {
+                close(fd);
+            }
+        }
+    }
+    
+    return 0;
 }
 
-/*******************************************************************************
-* 函数名 	: get_set_record_header
-* 描述   	: 获取/设置考勤数据库header
-* 输入     	: - att_header_t: 考勤数据库header - cmd: 0: 获取 1: 设置
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_record_header(struct att_header *att_header_t, u8 cmd)
+/**
+ * \brief 获取/设置考勤数据库header
+ *
+ * \param[in,out] p_att_header 考勤信息头
+ * \param[in]     cmd          0: 获取 1: 设置
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t record_header_get_set (att_header_t *p_att_header, uint8_t cmd)
 {
-	int fd;
-	
-	/* 检查参数合法性 */
-	if (att_header_t == 0)
-	{
-		att_printf("att_header_t addr is 0\r\n");
-		return -1;
-	}
-	/* 打开人员信息数据库 */
-	fd = open(attendance_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		att_printf("open %s failed\r\n", attendance_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, 0, SEEK_SET) == -1)
-		{
-			att_printf("lseek %s failed\r\n", attendance_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			if (cmd == 0)
-			{
-				/* 获取考勤记录总条数 */
-				if (read(fd, att_header_t, sizeof(struct att_header)) != sizeof(struct att_header))
-				{
-					att_printf("read %s failed\r\n", attendance_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					if (att_header_t->crc == block_crc_calc((u8 *)att_header_t, sizeof(struct att_header) - 4))
-					{
-						att_printf("get record header total is %d, not_upload is %d success\r\n",att_header_t->total, att_header_t->not_upload);
-					}
-					else
-					{
-						att_printf("crc validators fail total is %d, not_upload is %d\r\n",att_header_t->total, att_header_t->not_upload);
-						return -1;
-					}
-				}		
-			}
-			else if (cmd == 1)
-			{
-				/* 计算CRC */
-				att_header_t->crc = block_crc_calc((u8 *)att_header_t, sizeof(struct att_header) - 4);
-				/* 写入考勤记录总条数 */
-				if (write(fd, att_header_t, sizeof(struct att_header)) != sizeof(struct att_header))
-				{
-					att_printf("write %s failed\r\n", attendance_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					att_printf("set record header %d, %d success\r\n",att_header_t->total, att_header_t->not_upload);			
-				}		
-			}
-			else
-			{
-				close(fd);
-				att_printf("get set record count cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	
-	return 0;
+    int fd;
+    
+    /* 检查参数合法性 */
+    if (RT_NULL == p_att_header) {
+        ATT_PRINTF("p_att_header addr is 0\r\n");
+        return -1;
+    }
+    
+    /* 打开人员信息数据库 */
+    fd = open(gp_attendance_database_path, O_RDWR | O_CREAT, 0);
+    if (fd < 0) {
+        ATT_PRINTF("open %s failed\r\n", gp_attendance_database_path);
+        close(fd);
+        return -1;
+    } else {
+        
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, 0, SEEK_SET) == -1) {
+            ATT_PRINTF("lseek %s failed\r\n", gp_attendance_database_path);
+            close(fd);
+            return -1;
+        } else {
+            if (cmd == 0) 
+                {
+                /* 获取考勤记录总条数 */
+                if (read(fd, p_att_header, sizeof(att_header_t)) != sizeof(att_header_t)) {
+                    ATT_PRINTF("read %s failed\r\n", gp_attendance_database_path);
+                    close(fd);
+                    return -1;
+                } else {
+                    close(fd);
+                    if (p_att_header->crc == block_crc_calc((uint8_t *)p_att_header, sizeof(att_header_t) - 4)) {
+                        ATT_PRINTF("get record header total is %d success\r\n",p_att_header->total);
+                    } else {
+                        ATT_PRINTF("crc validators fail total is %d\r\n",p_att_header->total);
+                        return -1;
+                    }
+                }        
+            } else if (cmd == 1) {
+                
+                /* 计算CRC */
+                p_att_header->crc = block_crc_calc((uint8_t *)p_att_header, sizeof(att_header_t) - 4);
+                    
+                /* 写入考勤记录总条数 */
+                if (write(fd, p_att_header, sizeof(att_header_t)) != sizeof(att_header_t)) {
+                    ATT_PRINTF("write %s failed\r\n", gp_attendance_database_path);
+                    close(fd);
+                    return -1;
+                } else {
+                    close(fd);
+                    ATT_PRINTF("set record header %d success\r\n",p_att_header->total);            
+                }        
+            } else {
+                close(fd);
+                ATT_PRINTF("get set record count cmd unknown\r\n");
+                return -1;
+            }
+        }
+    }
+    
+    return 0;
+}
+/**
+ * \brief 获取/设置考勤数据库header
+ *
+ * \param[in,out] p_att_header 考勤信息头
+ * \param[in]     cmd          0: 获取 1: 设置
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t fd_record_header_get_set (int fd, att_header_t *p_att_header, uint8_t cmd)
+{    
+    /* 检查参数合法性 */
+    if (RT_NULL == p_att_header) {
+        ATT_PRINTF("p_att_header addr is 0\r\n");
+        goto failed;
+    }
+
+    /* 移动文件指针到指定位置 */
+    if (lseek(fd, 0, SEEK_SET) == -1) {
+        ATT_PRINTF("lseek %s failed\r\n", gp_attendance_database_path);
+        goto failed;
+    }
+    
+    if (cmd == 0) {
+        
+        /* 获取考勤记录header */
+        if (read(fd, p_att_header, sizeof(att_header_t)) != sizeof(att_header_t)) {
+            ATT_PRINTF("read %s failed\r\n", gp_attendance_database_path);
+            goto failed;
+        } else {
+            if (p_att_header->crc == block_crc_calc((uint8_t *)p_att_header, sizeof(att_header_t) - 4)) {
+                ATT_PRINTF("get record header total is %d success\r\n",p_att_header->total);
+            } else {
+                ATT_PRINTF("crc validators fail total is %d\r\n",p_att_header->total);
+                goto failed;
+            }
+        }        
+    } else if (cmd == 1) {
+        
+        /* 计算CRC */
+        p_att_header->crc = block_crc_calc((uint8_t *)p_att_header, sizeof(att_header_t) - 4);
+            
+        /* 写入考勤记录header */
+        if (write(fd, p_att_header, sizeof(att_header_t)) != sizeof(att_header_t)) {
+            ATT_PRINTF("write %s failed\r\n", gp_attendance_database_path);
+            goto failed;
+        } else {
+            ATT_PRINTF("set record header %d success\r\n",p_att_header->total);            
+        }        
+    } else {
+        ATT_PRINTF("get set record count cmd unknown\r\n");
+        goto failed;
+    }
+    
+    return 0;
+    
+failed:
+    return -1;
 }
 
-/*******************************************************************************
-* 函数名 	: get_set_att_record
-* 描述   	: 获取/设置一条考勤记录
-* 输入     	: - one_att_info: 考勤记录结构体 - cmd: 0: 获取 1: 设置
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_att_record(struct att_info *one_att_info, u8 cmd)
+/**
+ * \brief 添加一条考勤记录
+ *
+ * \param[in] p_one_att_info 考勤记录结构体
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t att_record_add (att_info_t *p_one_att_info)
 {
-	int fd;
-	
-	/* 检查参数合法性 */
-	if (one_att_info == 0)
-	{
-		att_printf("one_att_info addr is 0\r\n");
-		return -1;
-	}
+    int fd;
+    att_header_t att_header;
+    
+    /* 检查参数合法性 */
+    if (RT_NULL == p_one_att_info) {
+        ATT_PRINTF("p_one_att_info addr is 0\r\n");
+        return -1;
+    }
 
-	/* 打开人员信息数据库 */
-	fd = open(attendance_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		att_printf("open %s failed\r\n", attendance_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, (sizeof(struct att_info) * (one_att_info->record_id - 1)) + sizeof(struct att_header), SEEK_SET) == -1)
-		{
-			att_printf("lseek %s failed\r\n", attendance_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			switch(cmd)
-			{
-				/* 获取考勤记录 */
-				case 0:
-				{
-					/* 读取 */
-					if (read(fd, one_att_info, sizeof(struct att_info)) != sizeof(struct att_info))
-					{
-						att_printf("read %s failed\r\n", attendance_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						if (one_att_info->crc == block_crc_calc((u8 *)one_att_info, sizeof(struct att_info) - 4))
-						{
-							att_printf("get att record %d success\r\n", one_att_info->record_id);			
-						}
-						else
-						{
-							att_printf("crc validators fail,record_id is %d\r\n",one_att_info->record_id);
-							return -1;
-						}
-					}
-				}	break;
-				/* 添加考勤记录 */
-				case 1:
-				{
-					/* 计算CRC */
-					one_att_info->crc = block_crc_calc((u8 *)one_att_info, sizeof(struct att_info) - 4);
-					/* 写入 */
-					if (write(fd, one_att_info, sizeof(struct att_info)) != sizeof(struct att_info))
-					{
-						att_printf("write %s failed\r\n", attendance_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						att_printf("set att record %d success\r\n", one_att_info->user_id);			
-					}
-				}	break;
-				default :
-				{
-					close(fd);
-					att_printf("get set att record cmd unknown\r\n");					
-					return -1;
-				}
-			}
-		}
-	}
-	
-	return 0;
+    /* 打开人员信息数据库 */
+    fd = open(gp_attendance_database_path, O_RDWR | O_CREAT, 0);
+    if (fd < 0) {
+        ATT_PRINTF("open %s failed\r\n", gp_attendance_database_path);
+        return -1;
+    }
+    
+    /* 获取考勤记录header */
+    if (fd_record_header_get_set(fd, &att_header, GET_RECORD) != 0) {
+        ATT_PRINTF("fd_record_header_get failed\r\n");            
+        goto failed;
+    } 
+        
+    /* 移动文件指针到指定位置 */
+    if (lseek(fd, sizeof(att_info_t) * att_header.total + sizeof(att_header_t), SEEK_SET) == -1) {
+        ATT_PRINTF("lseek %s failed\r\n", gp_attendance_database_path);
+        goto failed;
+    }
+
+    /* 计算CRC */
+    p_one_att_info->crc = block_crc_calc((uint8_t *)p_one_att_info, sizeof(att_info_t) - 4);
+
+    /* 写入考勤记录 */
+    if (write(fd, p_one_att_info, sizeof(att_info_t)) != sizeof(att_info_t)) {
+        ATT_PRINTF("write %s failed\r\n", gp_attendance_database_path);
+        goto failed;
+    }
+        
+    att_header.total++;
+    
+    /* 保存考勤记录header */
+    if (fd_record_header_get_set(fd, &att_header, SET_RECORD) != 0) {
+        ATT_PRINTF("fd_record_header_set failed\r\n");            
+        goto failed;
+    }
+    ATT_PRINTF("set att record %d success\r\n", p_one_att_info->user_id);            
+    
+    close(fd);
+    return 0;
+    
+failed:
+    close(fd);
+    return -1;
 }
 
-/*******************************************************************************
-* 函数名 	: get_set_delete
-* 描述   	: 获取/设置考勤记录是否删除
-* 输入     	: - record_id: 考勤记录ID号 - is_delete：状态 - cmd: 0: 获取 1: 设置
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_delete(u32 record_id, u8 *is_delete, u8 cmd)
+/**
+ * \brief 删除指定条数考勤记录
+ *
+ * \param[in] num 待删除的条数
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t att_record_del (uint16_t num)
 {
-	struct att_info att_info_temp;
-	
-	rt_memset(&att_info_temp, 0, sizeof(struct att_info));
-	/* 检查参数合法性 */
-	if (is_delete == 0)
-	{
-		att_printf("is_delete addr is 0\r\n");
-		return -1;
-	}
-	
-	att_info_temp.record_id = record_id;
-	if (get_set_att_record(&att_info_temp, GET_RECORD) == 0)
-	{
-		switch(cmd)
-		{
-			/* 获取删除标志位 */
-			case 0:
-			{
-				*is_delete = att_info_temp.is_delete;
-				att_printf("get att record %d delete is %d success\r\n", record_id, att_info_temp.is_delete);
-			}	break;
-			/* 设置删除标志位 */
-			case 1:
-			{
-				att_info_temp.is_delete = *is_delete;
-				if (get_set_att_record(&att_info_temp, SET_RECORD) == 0)
-				{
-					att_printf("set att record %d delete is %d success\r\n", record_id, att_info_temp.is_delete);
-				}
-				else
-				{
-					att_printf("set att delete failed\r\n");
-					return -1;
-				}
-			}	break;
-			default :
-			{
-				att_printf("get set delete cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	else
-	{
-		att_printf("get set att delete failed\r\n");
-	}
+    int fd;
+    att_header_t att_header;
+    
+    /* 打开人员信息数据库 */
+    fd = open(gp_attendance_database_path, O_RDWR | O_CREAT, 0);
+    if (fd < 0) {
+        ATT_PRINTF("open %s failed\r\n", gp_attendance_database_path);
+        return -1;
+    }
+    
+    /* 获取考勤记录header */
+    if (fd_record_header_get_set(fd, &att_header, GET_RECORD) != 0) {
+        ATT_PRINTF("fd_record_header_get failed\r\n");            
+        goto failed;
+    } 
 
-	return 0;
+    if (att_header.total > num) {
+        att_header.total -= num;
+    } else {
+        att_header.total = 0;
+    }
+    
+    /* 保存考勤记录header */
+    if (fd_record_header_get_set(fd, &att_header, SET_RECORD) != 0) {
+        ATT_PRINTF("fd_record_header_set failed\r\n");            
+        goto failed;
+    }
+    
+    close(fd);
+    return 0;
+    
+failed:
+    close(fd);
+    return -1;
 }
 
-/*******************************************************************************
-* 函数名 	: get_set_upload
-* 描述   	: 获取/设置考勤记录是否上传
-* 输入     	: - record_id: 考勤记录ID号 - is_delete：状态 - cmd: 0: 获取 1: 设置
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_upload(u32 record_id, u8 *is_upload, u8 cmd)
+/**
+ * \brief 获取考勤记录(从最后一条记录开始获取)
+ *
+ * \param[out] att_info    考勤记录
+ * \param[in]  lenth       条数
+ * \param[out] p_att_count 获取到的考勤记录条数
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t att_record_get (att_info_t att_info[], uint8_t lenth, uint16_t *p_att_count)
 {
-	struct att_info att_info_temp;
-	
-	rt_memset(&att_info_temp, 0, sizeof(struct att_info));
-	/* 检查参数合法性 */
-	if (is_upload == 0)
-	{
-		att_printf("is_upload addr is 0\r\n");
-		return -1;
-	}
-	
-	att_info_temp.record_id = record_id;
-	if (get_set_att_record(&att_info_temp, GET_RECORD) == 0)
-	{
-		switch(cmd)
-		{
-			/* 获取上传标志位 */
-			case 0:
-			{
-				*is_upload = att_info_temp.is_upload;
-				att_printf("get att record %d upload is %d success\r\n", record_id, att_info_temp.is_upload);
-			}	break;
-			/* 设置上传标志位 */
-			case 1:
-			{
-				att_info_temp.is_upload = *is_upload;
-				if (get_set_att_record(&att_info_temp, SET_RECORD) == 0)
-				{
-					att_printf("set att record %d upload is %d success\r\n", record_id, att_info_temp.is_upload);
-				}
-				else
-				{
-					att_printf("set att upload failed\r\n");
-					return -1;
-				}
-			}	break;
-			default :
-			{
-				att_printf("get set upload cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	else
-	{
-		att_printf("get set att upload failed\r\n");
-	}
+    int fd;
+    struct stat file_info;
+    att_header_t att_header;
+    uint32_t addr = 0;
+    uint32_t i = 0;
+    uint32_t att_count = 0;
+    
+    /* 检查参数合法性 */
+    if (RT_NULL == att_info) {
+        ATT_PRINTF("att_info addr is 0\r\n");
+        return -1;
+    }
 
-	return 0;
+    /* 获取文件信息 */
+    if (stat(gp_attendance_database_path, &file_info) <0) {
+        ATT_PRINTF("stat %s failed\r\n", gp_attendance_database_path);
+        return -1;
+    }
+
+    /* 打开考勤信息数据库 */
+    fd = open(gp_attendance_database_path, O_RDWR | O_CREAT, 0);
+    if (fd < 0) {
+        ATT_PRINTF("open %s failed\r\n", gp_attendance_database_path);
+        return -1;
+    }
+    
+    /* 获取考勤记录header */
+    if (fd_record_header_get_set(fd, &att_header, GET_RECORD) != 0) {
+        ATT_PRINTF("fd_record_header_get failed\r\n");            
+        goto failed;
+    } 
+    rt_kprintf("total is %d\r\n", att_header.total);
+
+    if (lenth >= att_header.total) {
+        lenth = att_header.total;
+    }
+    
+    i = lenth;
+    while (i) {
+        addr = (sizeof(att_info_t) * ((i--) - 1)) + sizeof(att_header_t);
+        
+        /* 判断是否读取完整个文件 */
+        if (addr < sizeof(att_header_t)) {
+            break;
+        }
+
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, addr, SEEK_SET) == -1) {
+            ATT_PRINTF("lseek %s failed\r\n", gp_attendance_database_path);
+            break;
+        }
+        
+        /* 读取考勤记录 */
+        if (read(fd, &att_info[att_count], sizeof(att_info_t)) != sizeof(att_info_t)) {
+            ATT_PRINTF("read %s failed\r\n", gp_attendance_database_path);
+            break;
+        }
+        att_count++;
+    }
+    
+    if (RT_NULL != p_att_count) {
+        *p_att_count = att_count;
+    }
+    
+    close(fd);
+    return 0;
+   
+failed:
+    close(fd);
+    return -1;
 }
-
-/*******************************************************************************
-* 函数名 	: wipe_att_database
-* 描述   	: 清空考勤记录
-* 输入     	: None
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 wipe_att_database(void)
+    
+/**
+ * \brief 清空考勤记录
+ *
+ * \param[in] p_att_header 考勤信息头
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t att_database_wipe (att_header_t *p_att_header)
 {
-	rt_memset(&att_header_t, 0, sizeof(struct att_header));
-	if (unlink(attendance_database_path) == 0)
-	{
-		get_set_record_header(&att_header_t, SET_RECORD);
-		init_att_database();
-	}
-	else
-	{
-		att_printf("wipe_att_database failed\r\n");
-		return -1;
-	}
-	return 0;
+    rt_memset(p_att_header, 0, sizeof(att_header_t));
+    if (unlink(gp_attendance_database_path) == 0) {
+        record_header_get_set(p_att_header, SET_RECORD);
+        att_database_init(p_att_header);
+    } else {
+        ATT_PRINTF("att_database_wipe failed\r\n");
+        return -1;
+    }
+    return 0;
 }
-void wipe_att_db(void)
+void wipe_att_db (uint32_t count)
 {
-	wipe_att_database();
+    att_database_wipe(&g_att_header);
 }
-FINSH_FUNCTION_EXPORT(wipe_att_db, wipe att database)
+FINSH_FUNCTION_EXPORT_ALIAS(wipe_att_db, wipe_att_db, wipe_att_db)
 
-/*******************************************************************************
-* 函数名 	: print_record
-* 描述   	: 通过串口打印指定条数考勤记录
-* 输入     	: - count: 需要打印的条数
-* 输出     	: None
-* 返回值    : None
-*******************************************************************************/
-void print_record(u32 count)
+/**
+ * \brief 通过串口打印指定条数考勤记录
+ *
+ * \param[in] p_att_header 考勤信息头
+ * \param[in] count        数量
+ *
+ * \return 无
+ */
+void record_print (void)
 {
-	struct att_info one_att_info;
-	u32 i;
-	
-	if (count > att_header_t.total)
-	{
-		count = att_header_t.total;
-	}
-	rt_kprintf("total is %d, print %d\r\n",att_header_t.total, count);
-	for (i = 0; i < count; i++)
-	{
-		one_att_info.record_id = i + 1;
-		if (get_set_att_record(&one_att_info, GET_RECORD) == 0)
-		{
-			rt_kprintf("is_upload: %d is_delete: %d record_id: %5d user_id: %5d student_id: %11s name: %4s device_addr: %3d state: %d ",
-				one_att_info.is_upload, one_att_info.is_delete, one_att_info.record_id, one_att_info.user_id, 
-				one_att_info.student_id, one_att_info.name, one_att_info.device_addr, one_att_info.state);
-			
-			rt_kprintf(" time: 20%02d.%02d.%02d  %02d.%02d.%02d   CRC: %08X\r\n",
-				one_att_info.year, one_att_info.month, one_att_info.day, one_att_info.hour, 
-				one_att_info.minutes, one_att_info.second, one_att_info.crc);
-			
-		}
-		else
-		{
-			rt_kprintf("get_set_att_record failed\r\n");
-		}
-	}
-}
-FINSH_FUNCTION_EXPORT(print_record, print record)
+    static att_info_t att_info[100];
+    uint16_t get_count;
+    uint32_t i;
+    
+    rt_memset(att_info, 0, sizeof(att_info));
+    if (att_record_get(att_info, 100, &get_count)) {
+        rt_kprintf("att_record_get failed\r\n");
+        return;
+    }
 
+    for (i = 0; i < get_count; i++) {
+        rt_kprintf("user_id: %5d student_id: %11s name: %4s device_addr: %3d state: %d ",
+            att_info[i].user_id, att_info[i].student_id, att_info[i].name, att_info[i].device_addr, att_info[i].state);
+        
+        rt_kprintf("mac_addr:"MACSTR, MAC2STR(att_info[i].mac_addr));
+
+        rt_kprintf(" time: 20%02d.%02d.%02d  %02d.%02d.%02d   CRC: %08X\r\n",
+            att_info[i].year, att_info[i].month, att_info[i].day, att_info[i].hour, 
+            att_info[i].minutes, att_info[i].second, att_info[i].crc);
+    }
+}
+FINSH_FUNCTION_EXPORT_ALIAS(record_print, record_print, print record)
+
+/* end of file */

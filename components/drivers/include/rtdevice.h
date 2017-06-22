@@ -151,16 +151,16 @@ struct rt_data_queue
 /* workqueue implementation */
 struct rt_workqueue
 {
-	rt_list_t   work_list;
-	rt_thread_t work_thread;
+    rt_list_t   work_list;
+    rt_thread_t work_thread;
 };
 
 struct rt_work
 {
-	rt_list_t list;
+    rt_list_t list;
 
-	void (*work_func)(struct rt_work* work, void* work_data);
-	void *work_data;
+    void (*work_func)(struct rt_work* work, void* work_data);
+    void *work_data;
 };
 
 /**

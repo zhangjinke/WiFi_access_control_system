@@ -1283,23 +1283,23 @@ void rt_assert_handler(const char* ex_string, const char* func, rt_size_t line)
     if (rt_assert_hook == RT_NULL)
     {
 #ifdef RT_USING_MODULE
-		if (rt_module_self() != RT_NULL)
-		{
-			/* unload assertion module */
-			rt_module_unload(rt_module_self());
+        if (rt_module_self() != RT_NULL)
+        {
+            /* unload assertion module */
+            rt_module_unload(rt_module_self());
 
-			/* re-schedule */
-			rt_schedule();
-		}
-		else
+            /* re-schedule */
+            rt_schedule();
+        }
+        else
 #endif
-		{
-	        rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
-	        while (dummy == 0);
-		}
+        {
+            rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+            while (dummy == 0);
+        }
     }
-	else
-	{
+    else
+    {
         rt_assert_hook(ex_string, func, line);
     }
 }

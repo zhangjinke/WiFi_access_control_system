@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;drivers;HardWare;HardWare\BEEP_DOOR;HardWare\DS1307;HardWare\ESP8266;HardWare\RFID;HardWare\SOFT_IIC;HardWare\SPI;HardWare\SRAM;Libraries\STM32F10x_StdPeriph_Driver\inc;Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\components\CMSIS\Include;..\..\include;..\..\libcpu\arm\cortex-m3;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\elmfat;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh</IncludePath>
+              <IncludePath>applications;.;drivers;HardWare;HardWare\BEEP_DOOR;HardWare\DS1307;HardWare\ESP8266;HardWare\FINGER_PRINT;HardWare\PWM;HardWare\RFID;HardWare\SOFT_IIC;HardWare\SPI;HardWare\SRAM;HardWare\TFTLCD;HardWare\TOUCH_SCREEN;Libraries\STM32F10x_StdPeriph_Driver\inc;Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\components\CMSIS\Include;STemWin\Config;STemWin\inc;WindowDLG;..\..\include;..\..\libcpu\arm\cortex-m3;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\elmfat;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\drivers\spi;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -430,6 +430,11 @@
               <FileName>device_config.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\device_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>finger_thread.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\finger_thread.c</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
@@ -532,6 +537,16 @@
               <FilePath>HardWare\ESP8266\esp8266_cmd.c</FilePath>
             </File>
             <File>
+              <FileName>finger_print.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>HardWare\FINGER_PRINT\finger_print.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>HardWare\PWM\pwm.c</FilePath>
+            </File>
+            <File>
               <FileName>rc522.c</FileName>
               <FileType>1</FileType>
               <FilePath>HardWare\RFID\rc522.c</FilePath>
@@ -550,6 +565,16 @@
               <FileName>sram.c</FileName>
               <FileType>1</FileType>
               <FilePath>HardWare\SRAM\sram.c</FilePath>
+            </File>
+            <File>
+              <FileName>ILI93xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>HardWare\TFTLCD\ILI93xx.c</FilePath>
+            </File>
+            <File>
+              <FileName>touch_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>HardWare\TOUCH_SCREEN\touch_screen.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -680,6 +705,51 @@
               <FileName>startup_stm32f10x_hd.s</FileName>
               <FileType>2</FileType>
               <FilePath>Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\arm\startup_stm32f10x_hd.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>STemWin</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_X_OS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>STemWin\OS\GUI_X_OS.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUIConf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>STemWin\Config\GUIConf.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUIDRV_Template.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>STemWin\Config\GUIDRV_Template.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_X_Touch_Analog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>STemWin\Config\GUI_X_Touch_Analog.c</FilePath>
+            </File>
+            <File>
+              <FileName>LCDConf_FlexColor_Template.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>STemWin\Config\LCDConf_FlexColor_Template.c</FilePath>
+            </File>
+            <File>
+              <FileName>Lib_STemWin528_CM3_OS_Keil.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>STemWin\Lib\STemWin528_CM3_OS_Keil.lib</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>WindowDLG</GroupName>
+          <Files>
+            <File>
+              <FileName>WindowDLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>WindowDLG\WindowDLG.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,7 +1,7 @@
 #ifndef _ESP8266_H_
 #define _ESP8266_H_
 
-#include "sys.h"
+#include <stdint.h>
 
 #define HSPI_RX         (1 << 0) //hspi接收事件
 #define INIT_OK         (1 << 1) //esp8266初始化完成事件
@@ -12,21 +12,17 @@
 
 enum esp8266_io
 {
-	EN = 0,
-	RST,
-	CS,
-	BOOT
+    EN = 0,
+    RST,
+    CS,
+    BOOT
 };
 
-struct ip_info 
-{
-    u8 ip[4];
-    u8 netmask[4];
-    u8 gw[4];
-};
-
-#define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
-#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+typedef struct ip_info {
+    uint8_t ip[4];
+    uint8_t netmask[4];
+    uint8_t gw[4];
+} ip_info_t;
 
 #define ESP_MESH_HEAD_SIZE              (16)
 #define ESP_MESH_VER                    (0)
@@ -88,14 +84,14 @@ struct mesh_device_list_type {
 /* esp8266事件控制块 */
 extern struct rt_event esp8266_event;
  
-extern u8 wr_rdy, rd_rdy;
+extern uint8_t wr_rdy, rd_rdy;
 
-extern u8 recv_pack[1024*5];
-extern u8 is_recv_pack;
-extern u32 recv_lenth;
+extern uint8_t recv_pack[1024*5];
+extern uint8_t is_recv_pack;
+extern uint32_t recv_lenth;
 
-extern s8 init_esp8266(void);
-extern s8 esp8266_spi_read(void);
-extern s8 esp8266_spi_write(u8 *pack, u32 lenth);
+extern int8_t init_esp8266(void);
+extern int8_t esp8266_spi_read(void);
+extern int8_t esp8266_spi_write(uint8_t *pack, uint32_t lenth);
 
 #endif

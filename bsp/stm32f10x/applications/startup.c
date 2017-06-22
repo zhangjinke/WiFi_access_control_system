@@ -42,7 +42,7 @@ extern int __bss_end;
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void assert_failed(u8* file, u32 line)
+void assert_failed(uint8_t* file, uint32_t line)
 {
     rt_kprintf("\n\r Wrong parameter value detected on\r\n");
     rt_kprintf("       file  %s\r\n", file);
@@ -64,8 +64,8 @@ void rtthread_startup(void)
 
 #ifdef RT_USING_HEAP
 #if STM32_EXT_SRAM
-	#include "sram.h"
-	rt_hw_sram_init();	//初始化SRAM
+    #include "sram.h"
+    rt_hw_sram_init();    //初始化SRAM
     rt_system_heap_init((void*)STM32_EXT_SRAM_BEGIN, (void*)STM32_EXT_SRAM_END);
 #else
 #ifdef __CC_ARM

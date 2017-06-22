@@ -21,7 +21,6 @@
 // USER START (Optionally insert additional includes)
 #include "WindowDLG.h"
 #include <rtthread.h>
-#include "sys.h"
 // USER END
 
 #include "DIALOG.h"

@@ -2992,7 +2992,7 @@ static void DMA_RxConfiguration(uint32_t *BufferDST, uint32_t BufferSize)
 #include <dfs_fs.h>
 
 /* set sector size to 512 */
-#define SECTOR_SIZE		512
+#define SECTOR_SIZE        512
 
 static struct rt_device sdcard_device;
 static SD_CardInfo SDCardInfo;
@@ -3180,7 +3180,7 @@ int rt_hw_sdcard_init(void)
         status = SD_GetCardInfo(&SDCardInfo);
         if (status != SD_OK) goto __return;
 
-        status = SD_SelectDeselect((u32) (SDCardInfo.RCA << 16));
+        status = SD_SelectDeselect((uint32_t) (SDCardInfo.RCA << 16));
         if (status != SD_OK) goto __return;
 
         SD_EnableWideBusOperation(SDIO_BusWide_4b);
@@ -3216,10 +3216,10 @@ int rt_hw_sdcard_init(void)
 
         /* register sdcard device */
         sdcard_device.type  = RT_Device_Class_Block;
-        sdcard_device.init 	= rt_sdcard_init;
-        sdcard_device.open 	= rt_sdcard_open;
+        sdcard_device.init     = rt_sdcard_init;
+        sdcard_device.open     = rt_sdcard_open;
         sdcard_device.close = rt_sdcard_close;
-        sdcard_device.read 	= rt_sdcard_read;
+        sdcard_device.read     = rt_sdcard_read;
         sdcard_device.write = rt_sdcard_write;
         sdcard_device.control = rt_sdcard_control;
 

@@ -14,9 +14,10 @@
 
 #ifndef _PWM_H_
 #define _PWM_H_
-#include "sys.h"
 
-extern void rt_hw_lcd_led_init(u16 arr,u16 psc);
-extern void set_lcd_led(u8 device, u16 permillage);
+#include "global.h"
+
+extern void rt_hw_lcd_led_init(uint16_t arr,uint16_t psc);
+extern void set_lcd_led (uint8_t device, uint16_t permillage);
 
 #endif

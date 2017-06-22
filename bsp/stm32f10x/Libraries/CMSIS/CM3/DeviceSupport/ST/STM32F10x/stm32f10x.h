@@ -484,9 +484,9 @@ typedef enum IRQn
   */  
 
 /*!< STM32F10x Standard Peripheral Library old types (maintained for legacy purpose) */
-typedef int32_t  s32;
-typedef int16_t s16;
-typedef int8_t  s8;
+typedef int32_t  int32_t;
+typedef int16_t int16_t;
+typedef int8_t  int8_t;
 
 typedef const int32_t sc32;  /*!< Read Only */
 typedef const int16_t sc16;  /*!< Read Only */
@@ -500,9 +500,9 @@ typedef __I int32_t vsc32;  /*!< Read Only */
 typedef __I int16_t vsc16;  /*!< Read Only */
 typedef __I int8_t vsc8;   /*!< Read Only */
 
-typedef uint32_t  u32;
-typedef uint16_t u16;
-typedef uint8_t  u8;
+typedef uint32_t  uint32_t;
+typedef uint16_t uint16_t;
+typedef uint8_t  uint8_t;
 
 typedef const uint32_t uc32;  /*!< Read Only */
 typedef const uint16_t uc16;  /*!< Read Only */
@@ -788,7 +788,7 @@ typedef struct
 typedef struct
 {
   __IO uint32_t IDCODE;
-  __IO uint32_t CR;	
+  __IO uint32_t CR;    
 }DBGMCU_TypeDef;
 
 /** 
@@ -7915,7 +7915,7 @@ typedef struct
   #define ETH_MACFFR_PCF_ForwardAll              ((uint32_t)0x00000080)  /* MAC forwards all control frames to application even if they fail the Address Filter */
   #define ETH_MACFFR_PCF_ForwardPassedAddrFilter ((uint32_t)0x000000C0)  /* MAC forwards control frames that pass the Address Filter. */ 
 #define ETH_MACFFR_BFD    ((uint32_t)0x00000020)  /* Broadcast frame disable */ 
-#define ETH_MACFFR_PAM 	  ((uint32_t)0x00000010)  /* Pass all mutlicast */ 
+#define ETH_MACFFR_PAM       ((uint32_t)0x00000010)  /* Pass all mutlicast */ 
 #define ETH_MACFFR_DAIF   ((uint32_t)0x00000008)  /* DA Inverse filtering */ 
 #define ETH_MACFFR_HM     ((uint32_t)0x00000004)  /* Hash multicast */ 
 #define ETH_MACFFR_HU     ((uint32_t)0x00000002)  /* Hash unicast */

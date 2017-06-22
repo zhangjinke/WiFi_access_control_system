@@ -85,11 +85,11 @@ struct dfs_partition
 /* mount table */
 struct dfs_mount_tbl
 {
-	const char	 *device_name;
-	const char   *path;
-	const char   *filesystemtype;
-	unsigned long rwflag;
-	const void   *data;
+    const char     *device_name;
+    const char   *path;
+    const char   *filesystemtype;
+    unsigned long rwflag;
+    const void   *data;
 };
 
 int dfs_register(const struct dfs_filesystem_operation *ops);

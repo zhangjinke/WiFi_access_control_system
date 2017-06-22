@@ -641,9 +641,9 @@ typedef struct
 {
   __O  union
   {
-    __O  uint8_t    u8;                  /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 8-bit                   */
-    __O  uint16_t   u16;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 16-bit                  */
-    __O  uint32_t   u32;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 32-bit                  */
+    __O  uint8_t    uint8_t;                  /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 8-bit                   */
+    __O  uint16_t   uint16_t;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 16-bit                  */
+    __O  uint32_t   uint32_t;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 32-bit                  */
   }  PORT [32];                          /*!< Offset: 0x000 ( /W)  ITM Stimulus Port Registers               */
        uint32_t RESERVED0[864];
   __IO uint32_t TER;                     /*!< Offset: 0xE00 (R/W)  ITM Trace Enable Register                 */
@@ -1574,8 +1574,8 @@ __STATIC_INLINE uint32_t ITM_SendChar (uint32_t ch)
   if ((ITM->TCR & ITM_TCR_ITMENA_Msk)                  &&      /* ITM enabled */
       (ITM->TER & (1UL << 0)        )                    )     /* ITM Port #0 enabled */
   {
-    while (ITM->PORT[0].u32 == 0);
-    ITM->PORT[0].u8 = (uint8_t) ch;
+    while (ITM->PORT[0].uint32_t == 0);
+    ITM->PORT[0].uint8_t = (uint8_t) ch;
   }
   return (ch);
 }

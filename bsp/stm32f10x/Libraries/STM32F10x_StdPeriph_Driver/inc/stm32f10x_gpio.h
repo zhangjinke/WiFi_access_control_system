@@ -321,8 +321,8 @@ typedef enum
 /** @defgroup Ethernet_Media_Interface 
   * @{
   */ 
-#define GPIO_ETH_MediaInterface_MII    ((u32)0x00000000) 
-#define GPIO_ETH_MediaInterface_RMII   ((u32)0x00000001)                                       
+#define GPIO_ETH_MediaInterface_MII    ((uint32_t)0x00000000) 
+#define GPIO_ETH_MediaInterface_RMII   ((uint32_t)0x00000001)                                       
 
 #define IS_GPIO_ETH_MEDIA_INTERFACE(INTERFACE) (((INTERFACE) == GPIO_ETH_MediaInterface_MII) || \
                                                 ((INTERFACE) == GPIO_ETH_MediaInterface_RMII))

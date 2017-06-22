@@ -295,7 +295,7 @@ struct dirent
 #endif
 
 /* file descriptor */
-#define DFS_FD_MAGIC	 0xfdfd
+#define DFS_FD_MAGIC     0xfdfd
 struct dfs_fd
 {
     rt_uint16_t magic;           /* file descriptor magic number */

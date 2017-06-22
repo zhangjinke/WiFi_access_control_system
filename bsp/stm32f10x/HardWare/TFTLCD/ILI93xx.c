@@ -7,11 +7,11 @@
 
 #define rt_thread_delayMs(x) rt_thread_delay(rt_tick_from_millisecond(x))
 
-void DelayUs(u32 dwTime)
+void DelayUs(uint32_t dwTime)
 {
-    u32 dwCurCounter=0;                                //当前时间计数值
-    u32 dwPreTickVal=SysTick->VAL;                     //上一次SYSTICK计数值
-    u32 dwCurTickVal;                                  //上一次SYSTICK计数值
+    uint32_t dwCurCounter=0;                                //当前时间计数值
+    uint32_t dwPreTickVal=SysTick->VAL;                     //上一次SYSTICK计数值
+    uint32_t dwCurTickVal;                                  //上一次SYSTICK计数值
     dwTime=dwTime*(72000000/1000000);    //需延时时间，共多少时间节拍
     for(;;){
         dwCurTickVal=SysTick->VAL;
@@ -29,8 +29,8 @@ void DelayUs(u32 dwTime)
 }
 
 //LCD的画笔颜色和背景色	   
-u16 POINT_COLOR=0x0000;	//画笔颜色
-u16 BACK_COLOR=0xFFFF;  //背景色 
+uint16_t POINT_COLOR=0x0000;	//画笔颜色
+uint16_t BACK_COLOR=0xFFFF;  //背景色 
   
 //管理LCD重要参数
 //默认为竖屏
@@ -39,19 +39,19 @@ _lcd_dev lcddev1;
 	 
 //写寄存器函数
 //regval:寄存器值
-void LCD_WR_REG(LCD_TypeDef *TFTLCD, u16 regval)
+void LCD_WR_REG(LCD_TypeDef *TFTLCD, uint16_t regval)
 {
 	TFTLCD->LCD_REG=regval;//写入要写的寄存器序号	 
 }
 //写LCD数据
 //data:要写入的值
-void LCD_WR_DATA(LCD_TypeDef *TFTLCD, u16 data)
+void LCD_WR_DATA(LCD_TypeDef *TFTLCD, uint16_t data)
 {
 	TFTLCD->LCD_RAM=data;		 
 }
 //读LCD数据
 //返回值:读到的值
-u16 LCD_RD_DATA(LCD_TypeDef *TFTLCD)
+uint16_t LCD_RD_DATA(LCD_TypeDef *TFTLCD)
 {
 	vu16 ram;			//防止被优化
 	ram=TFTLCD->LCD_RAM;	
@@ -60,7 +60,7 @@ u16 LCD_RD_DATA(LCD_TypeDef *TFTLCD)
 //写寄存器
 //LCD_Reg:寄存器地址
 //LCD_RegValue:要写入的数据
-void LCD_WriteReg(LCD_TypeDef *TFTLCD, u16 LCD_Reg,u16 LCD_RegValue)
+void LCD_WriteReg(LCD_TypeDef *TFTLCD, uint16_t LCD_Reg,uint16_t LCD_RegValue)
 {
 	TFTLCD->LCD_REG = LCD_Reg;		//写入要写的寄存器序号	 
 	TFTLCD->LCD_RAM = LCD_RegValue;//写入数据	    		 
@@ -68,7 +68,7 @@ void LCD_WriteReg(LCD_TypeDef *TFTLCD, u16 LCD_Reg,u16 LCD_RegValue)
 //读寄存器
 //LCD_Reg:寄存器地址
 //返回值:读到的数据
-u16 LCD_ReadReg(LCD_TypeDef *TFTLCD, u16 LCD_Reg)
+uint16_t LCD_ReadReg(LCD_TypeDef *TFTLCD, uint16_t LCD_Reg)
 {
 	LCD_WR_REG(TFTLCD, LCD_Reg);		//写入要读的寄存器序号
 	//DelayUs(5);		  
@@ -91,7 +91,7 @@ void LCD_WriteRAM_Prepare(LCD_TypeDef *TFTLCD)
 }	 
 //LCD写GRAM
 //RGB_Code:颜色值
-void LCD_WriteRAM(LCD_TypeDef *TFTLCD, u16 RGB_Code)
+void LCD_WriteRAM(LCD_TypeDef *TFTLCD, uint16_t RGB_Code)
 {							    
 	TFTLCD->LCD_RAM = RGB_Code;//写十六位GRAM
 }
@@ -99,9 +99,9 @@ void LCD_WriteRAM(LCD_TypeDef *TFTLCD, u16 RGB_Code)
 //通过该函数转换
 //c:GBR格式的颜色值
 //返回值：RGB格式的颜色值
-u16 LCD_BGR2RGB(u16 c)
+uint16_t LCD_BGR2RGB(uint16_t c)
 {
-	u16  r,g,b,rgb;   
+	uint16_t  r,g,b,rgb;   
 	b=(c>>0)&0x1f;
 	g=(c>>5)&0x3f;
 	r=(c>>11)&0x1f;	 
@@ -110,7 +110,7 @@ u16 LCD_BGR2RGB(u16 c)
 } 
 //当mdk -O1时间优化时需要设置
 //延时i
-void opt_delay(u8 i)
+void opt_delay(uint8_t i)
 {
 	while(i--);
 }
@@ -118,9 +118,9 @@ void opt_delay(u8 i)
 //读取个某点的颜色值	 
 //x,y:坐标
 //返回值:此点的颜色
-u16 LCD_ReadPoint(LCD_TypeDef *TFTLCD, u16 x,u16 y)
+uint16_t LCD_ReadPoint(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y)
 {
- 	u16 r=0;
+ 	uint16_t r=0;
 	_lcd_dev *lcddev;
 	
 	if (TFTLCD == LCD0)
@@ -145,7 +145,7 @@ u16 LCD_ReadPoint(LCD_TypeDef *TFTLCD, u16 x,u16 y)
 //设置光标位置
 //Xpos:横坐标
 //Ypos:纵坐标
-void LCD_SetCursor(LCD_TypeDef *TFTLCD, u16 Xpos, u16 Ypos)
+void LCD_SetCursor(LCD_TypeDef *TFTLCD, uint16_t Xpos, uint16_t Ypos)
 {
 	_lcd_dev *lcddev;
 	
@@ -168,10 +168,10 @@ void LCD_SetCursor(LCD_TypeDef *TFTLCD, u16 Xpos, u16 Ypos)
 //所以,一般设置为L2R_U2D即可,如果设置为其他扫描方式,可能导致显示不正常.
 //dir:0~7,代表8个方向(具体定义见lcd.h)
 //9320/9325/9328/4531/4535/1505/b505/5408/9341/5310/5510/1963等IC已经实际测试	   	   
-void LCD_Scan_Dir(LCD_TypeDef *TFTLCD, u8 dir)
+void LCD_Scan_Dir(LCD_TypeDef *TFTLCD, uint8_t dir)
 {
-	u16 regval=0;
-	u16 dirreg=0;
+	uint16_t regval=0;
+	uint16_t dirreg=0;
 	
 	switch(dir)
 	{
@@ -208,7 +208,7 @@ void LCD_Scan_Dir(LCD_TypeDef *TFTLCD, u8 dir)
 //画点
 //x,y:坐标
 //POINT_COLOR:此点的颜色
-void LCD_DrawPoint(LCD_TypeDef *TFTLCD, u16 x,u16 y)
+void LCD_DrawPoint(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y)
 {
 	LCD_SetCursor(TFTLCD, x,y);		//设置光标位置 
 	LCD_WriteRAM_Prepare(TFTLCD);	//开始写入GRAM
@@ -218,7 +218,7 @@ void LCD_DrawPoint(LCD_TypeDef *TFTLCD, u16 x,u16 y)
 //快速画点
 //x,y:坐标
 //color:颜色
-void LCD_Fast_DrawPoint(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
+void LCD_Fast_DrawPoint(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint16_t color)
 {
 	_lcd_dev *lcddev;
 	
@@ -241,7 +241,7 @@ void LCD_Fast_DrawPoint(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 color)
 
 //设置LCD显示方向
 //dir:0,竖屏；1,横屏
-void LCD_Display_Dir(LCD_TypeDef *TFTLCD, u8 dir)
+void LCD_Display_Dir(LCD_TypeDef *TFTLCD, uint8_t dir)
 {
 	_lcd_dev *lcddev;
 	
@@ -357,7 +357,7 @@ void TFTLCD_Init(void)
    	FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);              /* 使能BANK3 */
 	
 	rt_thread_delayMs(50); 					// delay 50 ms
-	for (u8 i = 0; i < 2; i++)
+	for (uint8_t i = 0; i < 2; i++)
 	{
 		if (i == 0)
 		{
@@ -445,10 +445,10 @@ void TFTLCD_Init(void)
 
 //清屏函数
 //color:要清屏的填充色
-void LCD_Clear(LCD_TypeDef *TFTLCD, u16 color)
+void LCD_Clear(LCD_TypeDef *TFTLCD, uint16_t color)
 {
-	u32 index=0;      
-	u32 totalpoint;
+	uint32_t index=0;      
+	uint32_t totalpoint;
 	_lcd_dev *lcddev;
 	
 	if (TFTLCD == LCD0)
@@ -472,10 +472,10 @@ void LCD_Clear(LCD_TypeDef *TFTLCD, u16 color)
 //在指定区域内填充单个颜色
 //(sx,sy),(ex,ey):填充矩形对角坐标,区域大小为:(ex-sx+1)*(ey-sy+1)   
 //color:要填充的颜色
-void LCD_Fill(LCD_TypeDef *TFTLCD, u16 sx,u16 sy,u16 ex,u16 ey,u16 color)
+void LCD_Fill(LCD_TypeDef *TFTLCD, uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t color)
 {          
-	u16 i,j;
-	u16 xlen=0;
+	uint16_t i,j;
+	uint16_t xlen=0;
 	
 	xlen=ex-sx+1;	 
 	for(i=sy;i<=ey;i++)
@@ -488,10 +488,10 @@ void LCD_Fill(LCD_TypeDef *TFTLCD, u16 sx,u16 sy,u16 ex,u16 ey,u16 color)
 //在指定区域内填充指定颜色块			 
 //(sx,sy),(ex,ey):填充矩形对角坐标,区域大小为:(ex-sx+1)*(ey-sy+1)   
 //color:要填充的颜色
-void LCD_Color_Fill(LCD_TypeDef *TFTLCD, u16 sx,u16 sy,u16 ex,u16 ey,u16 *color)
+void LCD_Color_Fill(LCD_TypeDef *TFTLCD, uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t *color)
 {  
-	u16 height,width;
-	u16 i,j;
+	uint16_t height,width;
+	uint16_t i,j;
 	width=ex-sx+1; 			//得到填充的宽度
 	height=ey-sy+1;			//高度
  	for(i=0;i<height;i++)
@@ -504,9 +504,9 @@ void LCD_Color_Fill(LCD_TypeDef *TFTLCD, u16 sx,u16 sy,u16 ex,u16 ey,u16 *color)
 //画线
 //x1,y1:起点坐标
 //x2,y2:终点坐标  
-void LCD_DrawLine(LCD_TypeDef *TFTLCD, u16 x1, u16 y1, u16 x2, u16 y2)
+void LCD_DrawLine(LCD_TypeDef *TFTLCD, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
-	u16 t; 
+	uint16_t t; 
 	int xerr=0,yerr=0,delta_x,delta_y,distance; 
 	int incx,incy,uRow,uCol; 
 	delta_x=x2-x1; //计算坐标增量 
@@ -540,7 +540,7 @@ void LCD_DrawLine(LCD_TypeDef *TFTLCD, u16 x1, u16 y1, u16 x2, u16 y2)
 }    
 //画矩形	  
 //(x1,y1),(x2,y2):矩形的对角坐标
-void LCD_DrawRectangle(LCD_TypeDef *TFTLCD, u16 x1, u16 y1, u16 x2, u16 y2)
+void LCD_DrawRectangle(LCD_TypeDef *TFTLCD, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	LCD_DrawLine(TFTLCD, x1,y1,x2,y1);
 	LCD_DrawLine(TFTLCD, x1,y1,x1,y2);
@@ -550,7 +550,7 @@ void LCD_DrawRectangle(LCD_TypeDef *TFTLCD, u16 x1, u16 y1, u16 x2, u16 y2)
 //在指定位置画一个指定大小的圆
 //(x,y):中心点
 //r    :半径
-void LCD_Draw_Circle(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u8 r)
+void LCD_Draw_Circle(LCD_TypeDef *TFTLCD, uint16_t x0,uint16_t y0,uint8_t r)
 {
 	int a,b;
 	int di;
@@ -581,11 +581,11 @@ void LCD_Draw_Circle(LCD_TypeDef *TFTLCD, u16 x0,u16 y0,u8 r)
 //num:要显示的字符:" "--->"~"
 //size:字体大小 12/16/24
 //mode:叠加方式(1)还是非叠加方式(0)
-void LCD_ShowChar(LCD_TypeDef *TFTLCD, u16 x,u16 y,u8 num,u8 size,u8 mode)
+void LCD_ShowChar(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t mode)
 {  							  
-    u8 temp,t1,t;
-	u16 y0=y;
-	u8 csize=(size/8+((size%8)?1:0))*(size/2);		//得到字体一个字符对应点阵集所占的字节数
+    uint8_t temp,t1,t;
+	uint16_t y0=y;
+	uint8_t csize=(size/8+((size%8)?1:0))*(size/2);		//得到字体一个字符对应点阵集所占的字节数
 	_lcd_dev *lcddev;
 	
 	if (TFTLCD == LCD0)
@@ -623,9 +623,9 @@ void LCD_ShowChar(LCD_TypeDef *TFTLCD, u16 x,u16 y,u8 num,u8 size,u8 mode)
 }   
 //m^n函数
 //返回值:m^n次方.
-u32 LCD_Pow(u8 m,u8 n)
+uint32_t LCD_Pow(uint8_t m,uint8_t n)
 {
-	u32 result=1;	 
+	uint32_t result=1;	 
 	while(n--)result*=m;    
 	return result;
 }			
@@ -636,10 +636,10 @@ u32 LCD_Pow(u8 m,u8 n)
 //size:字体大小
 //color:颜色 
 //num:数值(0~4294967295);	 
-void LCD_ShowNum(LCD_TypeDef *TFTLCD, u16 x,u16 y,u32 num,u8 len,u8 size)
+void LCD_ShowNum(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint32_t num,uint8_t len,uint8_t size)
 {         	
-	u8 t,temp;
-	u8 enshow=0;						   
+	uint8_t t,temp;
+	uint8_t enshow=0;						   
 	for(t=0;t<len;t++)
 	{
 		temp=(num/LCD_Pow(10,len-t-1))%10;
@@ -664,10 +664,10 @@ void LCD_ShowNum(LCD_TypeDef *TFTLCD, u16 x,u16 y,u32 num,u8 len,u8 size)
 //[7]:0,不填充;1,填充0.
 //[6:1]:保留
 //[0]:0,非叠加显示;1,叠加显示.
-void LCD_ShowxNum(LCD_TypeDef *TFTLCD, u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode)
+void LCD_ShowxNum(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint32_t num,uint8_t len,uint8_t size,uint8_t mode)
 {  
-	u8 t,temp;
-	u8 enshow=0;						   
+	uint8_t t,temp;
+	uint8_t enshow=0;						   
 	for(t=0;t<len;t++)
 	{
 		temp=(num/LCD_Pow(10,len-t-1))%10;
@@ -689,9 +689,9 @@ void LCD_ShowxNum(LCD_TypeDef *TFTLCD, u16 x,u16 y,u32 num,u8 len,u8 size,u8 mod
 //width,height:区域大小  
 //size:字体大小
 //*p:字符串起始地址		  
-void LCD_ShowString(LCD_TypeDef *TFTLCD, u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p)
+void LCD_ShowString(LCD_TypeDef *TFTLCD, uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t size,uint8_t *p)
 {         
-	u8 x0=x;
+	uint8_t x0=x;
 	width+=x;
 	height+=y;
     while((*p<='~')&&(*p>=' '))//判断是不是非法字符!

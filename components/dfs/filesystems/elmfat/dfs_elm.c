@@ -111,7 +111,7 @@ int dfs_elm_mount(struct dfs_filesystem *fs, unsigned long rwflag, const void *d
     FATFS *fat;
     FRESULT result;
     int index;
-	struct rt_device_blk_geometry geometry;
+    struct rt_device_blk_geometry geometry;
 
     /* get an empty position */
     index = get_disk(RT_NULL);
@@ -120,16 +120,16 @@ int dfs_elm_mount(struct dfs_filesystem *fs, unsigned long rwflag, const void *d
 
     /* save device */
     disk[index] = fs->dev_id;
-	/* check sector size */
-	if (rt_device_control(fs->dev_id, RT_DEVICE_CTRL_BLK_GETGEOME, &geometry) == RT_EOK)
-	{
-		if (geometry.bytes_per_sector > _MAX_SS) 
-		{
-			rt_kprintf("The sector size of device is greater than the sector size of FAT.\n");
-			return -DFS_STATUS_EINVAL;
-		}
-	}
-	
+    /* check sector size */
+    if (rt_device_control(fs->dev_id, RT_DEVICE_CTRL_BLK_GETGEOME, &geometry) == RT_EOK)
+    {
+        if (geometry.bytes_per_sector > _MAX_SS) 
+        {
+            rt_kprintf("The sector size of device is greater than the sector size of FAT.\n");
+            return -DFS_STATUS_EINVAL;
+        }
+    }
+    
     fat = (FATFS *)rt_malloc(sizeof(FATFS));
     if (fat == RT_NULL)
     {

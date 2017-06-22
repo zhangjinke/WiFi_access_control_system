@@ -22,7 +22,7 @@
 * 输出     	: None
 * 返回值    	: None
 *******************************************************************************/
-void set_lcd_led(u8 device, u16 permillage)
+void set_lcd_led (uint8_t device, uint16_t permillage)
 {
 	switch(device)
 	{
@@ -46,7 +46,7 @@ FINSH_FUNCTION_EXPORT(set_lcd_led, set lcd led)
 * 输出     	: None
 * 返回值    	: None
 *******************************************************************************/
-void rt_hw_lcd_led_init(u16 arr,u16 psc)
+void rt_hw_lcd_led_init(uint16_t arr,uint16_t psc)
 {  
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;

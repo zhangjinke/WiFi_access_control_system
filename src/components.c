@@ -152,8 +152,8 @@ extern int main(void);
 extern void __iar_data_init3( void );
 int __low_level_init(void)
 {
-	// call IAR table copy function.
-	__iar_data_init3();
+    // call IAR table copy function.
+    __iar_data_init3();
     rt_hw_interrupt_disable();
     rtthread_startup();
     return 0;
@@ -215,7 +215,7 @@ void rt_application_init(void)
 
 int rtthread_startup(void)
 {
-	rt_hw_interrupt_disable();
+    rt_hw_interrupt_disable();
 
     /* board level initalization
      * NOTE: please initialize heap inside board initialization.

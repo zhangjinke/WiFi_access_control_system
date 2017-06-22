@@ -429,7 +429,7 @@ RTM_EXPORT(fsync);
  */
 int ioctl(int fildes, unsigned long cmd, void *data)
 {
-	int ret;
+    int ret;
     struct dfs_fd *d;
 
     /* get the fd */
@@ -440,15 +440,15 @@ int ioctl(int fildes, unsigned long cmd, void *data)
         return -1;
     }
 
-	ret = dfs_file_ioctl(d, cmd, data);
-	if (ret != DFS_STATUS_OK)
-	{
-		rt_set_errno(ret);
-		ret = -1;
-	}
+    ret = dfs_file_ioctl(d, cmd, data);
+    if (ret != DFS_STATUS_OK)
+    {
+        rt_set_errno(ret);
+        ret = -1;
+    }
     fd_put(d);
 
-	return ret;
+    return ret;
 }
 RTM_EXPORT(ioctl);
 

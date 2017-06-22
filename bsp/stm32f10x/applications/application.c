@@ -64,8 +64,8 @@ void cali_store(struct calibration_data *data)
 
 void rt_init_thread_entry(void* parameter)
 {
-	rt_thread_t user_init_thread;
-	
+    rt_thread_t user_init_thread;
+    
 #ifdef RT_USING_COMPONENTS_INIT
     /* initialization RT-Thread Components */
     rt_components_init();
@@ -114,8 +114,8 @@ void rt_init_thread_entry(void* parameter)
 
     user_init_thread = rt_thread_create("user_init",
                                    user_init_thread_entry, RT_NULL,
-                                   2048, 8, 20);
-	
+                                   64 * 1024, 8, 20);
+    
     if (user_init_thread != RT_NULL)
         rt_thread_startup(user_init_thread);
 

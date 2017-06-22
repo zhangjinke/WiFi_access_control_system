@@ -674,21 +674,21 @@ void mmcsd_detect(void *param)
             }
             else
             {
-            	/* card removed */
-            	mmcsd_host_lock(host);
-            	if (host->card->sdio_function_num != 0)
-            	{
-            		rt_kprintf("unsupport sdio card plug out!\n");
-            	}
-            	else
-            	{
-            		rt_mmcsd_blk_remove(host->card);
-            		rt_free(host->card);
+                /* card removed */
+                mmcsd_host_lock(host);
+                if (host->card->sdio_function_num != 0)
+                {
+                    rt_kprintf("unsupport sdio card plug out!\n");
+                }
+                else
+                {
+                    rt_mmcsd_blk_remove(host->card);
+                    rt_free(host->card);
 
-            		host->card = RT_NULL;
-            	}
-            	mmcsd_host_unlock(host);
-            	rt_mb_send(&mmcsd_hotpluge_mb, (rt_uint32_t)host);
+                    host->card = RT_NULL;
+                }
+                mmcsd_host_unlock(host);
+                rt_mb_send(&mmcsd_hotpluge_mb, (rt_uint32_t)host);
             }
         }
     }

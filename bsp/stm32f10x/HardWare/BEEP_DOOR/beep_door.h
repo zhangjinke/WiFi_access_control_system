@@ -13,13 +13,12 @@
 *********************************************************************************************************/
 
 #ifndef _BEEP_DOOR_H_
-#define _BEEP_DOOR_H_	 
-#include "sys.h"
+#define _BEEP_DOOR_H_     
 
-#define BEEP PAout(0)	//高电平蜂鸣器响
-#define DOOR PEout(4)	//低电平开门
+#define BEEP PAout(0)    //高电平蜂鸣器响
+#define DOOR PEout(4)    //低电平开门
 
 void rt_hw_beep_door_init(void);
 void open_door(void);
-	
+    
 #endif

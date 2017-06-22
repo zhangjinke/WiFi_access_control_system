@@ -89,28 +89,28 @@ typedef unsigned int size_t;
 #endif
 #endif
 
-#define FINSH_VERSION_MAJOR			1
-#define FINSH_VERSION_MINOR			0
+#define FINSH_VERSION_MAJOR            1
+#define FINSH_VERSION_MINOR            0
 
 /**
  * @addtogroup finsh
  */
 /*@{*/
-#define FINSH_ERROR_OK              0   /**< No error 			*/
-#define FINSH_ERROR_INVALID_TOKEN	1	/**< Invalid token 		*/
-#define FINSH_ERROR_EXPECT_TYPE		2	/**< Expect a type 		*/
-#define FINSH_ERROR_UNKNOWN_TYPE	3	/**< Unknown type 		*/
-#define FINSH_ERROR_VARIABLE_EXIST	4	/**< Variable exist 	*/
-#define FINSH_ERROR_EXPECT_OPERATOR	5	/**< Expect a operator 	*/
-#define FINSH_ERROR_MEMORY_FULL		6	/**< Memory full 		*/
-#define FINSH_ERROR_UNKNOWN_OP		7 	/**< Unknown operator 	*/
-#define FINSH_ERROR_UNKNOWN_NODE	8	/**< Unknown node 		*/
-#define FINSH_ERROR_EXPECT_CHAR		9	/**< Expect a character */
-#define FINSH_ERROR_UNEXPECT_END	10	/**< Unexpect end 		*/
-#define FINSH_ERROR_UNKNOWN_TOKEN	11	/**< Unknown token 		*/
-#define FINSH_ERROR_NO_FLOAT		12	/**< Float not supported */
-#define FINSH_ERROR_UNKNOWN_SYMBOL	13	/**< Unknown symbol 	*/
-#define FINSH_ERROR_NULL_NODE		14	/**< Null node 			*/
+#define FINSH_ERROR_OK              0   /**< No error             */
+#define FINSH_ERROR_INVALID_TOKEN    1    /**< Invalid token         */
+#define FINSH_ERROR_EXPECT_TYPE        2    /**< Expect a type         */
+#define FINSH_ERROR_UNKNOWN_TYPE    3    /**< Unknown type         */
+#define FINSH_ERROR_VARIABLE_EXIST    4    /**< Variable exist     */
+#define FINSH_ERROR_EXPECT_OPERATOR    5    /**< Expect a operator     */
+#define FINSH_ERROR_MEMORY_FULL        6    /**< Memory full         */
+#define FINSH_ERROR_UNKNOWN_OP        7     /**< Unknown operator     */
+#define FINSH_ERROR_UNKNOWN_NODE    8    /**< Unknown node         */
+#define FINSH_ERROR_EXPECT_CHAR        9    /**< Expect a character */
+#define FINSH_ERROR_UNEXPECT_END    10    /**< Unexpect end         */
+#define FINSH_ERROR_UNKNOWN_TOKEN    11    /**< Unknown token         */
+#define FINSH_ERROR_NO_FLOAT        12    /**< Float not supported */
+#define FINSH_ERROR_UNKNOWN_SYMBOL    13    /**< Unknown symbol     */
+#define FINSH_ERROR_NULL_NODE        14    /**< Null node             */
 /*@}*/
 
 typedef long (*syscall_func)();
@@ -118,18 +118,18 @@ typedef long (*syscall_func)();
 /* system call table */
 struct finsh_syscall
 {
-	const char*		name;		/* the name of system call */
+    const char*        name;        /* the name of system call */
 #if defined(FINSH_USING_DESCRIPTION) && defined(FINSH_USING_SYMTAB)
-	const char*		desc;		/* description of system call */
+    const char*        desc;        /* description of system call */
 #endif
-	syscall_func func;		/* the function address of system call */
+    syscall_func func;        /* the function address of system call */
 };
 
 /* system call item */
 struct finsh_syscall_item
 {
-	struct finsh_syscall_item* next;	/* next item */
-	struct finsh_syscall syscall;		/* syscall */
+    struct finsh_syscall_item* next;    /* next item */
+    struct finsh_syscall syscall;        /* syscall */
 };
 extern struct finsh_syscall *_syscall_table_begin, *_syscall_table_end;
 extern struct finsh_syscall_item *global_syscall_list;
@@ -140,12 +140,12 @@ struct finsh_syscall* finsh_syscall_lookup(const char* name);
 /* system variable table */
 struct finsh_sysvar
 {
-	const char*		name;		/* the name of variable */
+    const char*        name;        /* the name of variable */
 #if defined(FINSH_USING_DESCRIPTION) && defined(FINSH_USING_SYMTAB)
-	const char* 	desc;		/* description of system variable */
+    const char*     desc;        /* description of system variable */
 #endif
-	u_char		 type;		/* the type of variable */
-	void*		 var ;		/* the address of variable */
+    u_char         type;        /* the type of variable */
+    void*         var ;        /* the address of variable */
 };
 
 #if defined(_MSC_VER) || (defined(__GNUC__) && defined(__x86_64__))
@@ -161,8 +161,8 @@ struct finsh_sysvar* finsh_sysvar_next(struct finsh_sysvar* call);
 /* system variable item */
 struct finsh_sysvar_item
 {
-	struct finsh_sysvar_item *next;		/* next item */
-	struct finsh_sysvar sysvar;			/* system variable */
+    struct finsh_sysvar_item *next;        /* next item */
+    struct finsh_sysvar sysvar;            /* system variable */
 };
 extern struct finsh_sysvar *_sysvar_table_begin, *_sysvar_table_end;
 extern struct finsh_sysvar_item* global_sysvar_list;
@@ -356,57 +356,57 @@ struct finsh_sysvar* finsh_sysvar_lookup(const char* name);
 
 struct finsh_token
 {
-	char eof;
-	char replay;
+    char eof;
+    char replay;
 
-	int  position;
-	u_char current_token;
+    int  position;
+    u_char current_token;
 
-	union {
-		char char_value;
-		int int_value;
-		long long_value;
-	} value;
-	u_char string[FINSH_STRING_MAX];
+    union {
+        char char_value;
+        int int_value;
+        long long_value;
+    } value;
+    u_char string[FINSH_STRING_MAX];
 
-	u_char* line;
+    u_char* line;
 };
 
-#define FINSH_IDTYPE_VAR		0x01
-#define FINSH_IDTYPE_SYSVAR		0x02
-#define FINSH_IDTYPE_SYSCALL	0x04
-#define FINSH_IDTYPE_ADDRESS	0x08
+#define FINSH_IDTYPE_VAR        0x01
+#define FINSH_IDTYPE_SYSVAR        0x02
+#define FINSH_IDTYPE_SYSCALL    0x04
+#define FINSH_IDTYPE_ADDRESS    0x08
 struct finsh_node
 {
-	u_char node_type;	/* node node_type */
-	u_char data_type;	/* node data node_type */
-	u_char idtype;		/* id node information */
+    u_char node_type;    /* node node_type */
+    u_char data_type;    /* node data node_type */
+    u_char idtype;        /* id node information */
 
-	union {			/* value node */
-		char 	char_value;
-		short 	short_value;
-		int 	int_value;
-		long 	long_value;
-		void* 	ptr;
-	} value;
-	union
-	{
-		/* point to variable identifier or function identifier */
-		struct finsh_var	*var;
-		struct finsh_sysvar	*sysvar;
-		struct finsh_syscall*syscall;
-	}id;
+    union {            /* value node */
+        char     char_value;
+        short     short_value;
+        int     int_value;
+        long     long_value;
+        void*     ptr;
+    } value;
+    union
+    {
+        /* point to variable identifier or function identifier */
+        struct finsh_var    *var;
+        struct finsh_sysvar    *sysvar;
+        struct finsh_syscall*syscall;
+    }id;
 
-	/* sibling and child node */
-	struct finsh_node *sibling, *child;
+    /* sibling and child node */
+    struct finsh_node *sibling, *child;
 };
 
 struct finsh_parser
 {
-	u_char* parser_string;
+    u_char* parser_string;
 
     struct finsh_token token;
-	struct finsh_node* root;
+    struct finsh_node* root;
 };
 
 /**
@@ -415,21 +415,21 @@ struct finsh_parser
  * The basic data type in finsh shell
  */
 enum finsh_type {
-	finsh_type_unknown = 0, /**< unknown data type */
-	finsh_type_void,		/**< void  			*/
-	finsh_type_voidp,		/**< void pointer  	*/
-	finsh_type_char,		/**< char  			*/
-	finsh_type_uchar,		/**< unsigned char  */
-	finsh_type_charp,		/**< char pointer  	*/
-	finsh_type_short,		/**< short  		*/
-	finsh_type_ushort,		/**< unsigned short */
-	finsh_type_shortp,		/**< short pointer  */
-	finsh_type_int,			/**< int 			*/
-	finsh_type_uint,		/**< unsigned int 	*/
-	finsh_type_intp,		/**< int pointer 	*/
-	finsh_type_long,		/**< long 			*/
-	finsh_type_ulong,		/**< unsigned long 	*/
-	finsh_type_longp		/**< long pointer 	*/
+    finsh_type_unknown = 0, /**< unknown data type */
+    finsh_type_void,        /**< void              */
+    finsh_type_voidp,        /**< void pointer      */
+    finsh_type_char,        /**< char              */
+    finsh_type_uchar,        /**< unsigned char  */
+    finsh_type_charp,        /**< char pointer      */
+    finsh_type_short,        /**< short          */
+    finsh_type_ushort,        /**< unsigned short */
+    finsh_type_shortp,        /**< short pointer  */
+    finsh_type_int,            /**< int             */
+    finsh_type_uint,        /**< unsigned int     */
+    finsh_type_intp,        /**< int pointer     */
+    finsh_type_long,        /**< long             */
+    finsh_type_ulong,        /**< unsigned long     */
+    finsh_type_longp        /**< long pointer     */
 };
 
 /* init finsh environment */

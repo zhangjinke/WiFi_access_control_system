@@ -69,7 +69,7 @@ int dfs_init(void)
     rt_memset(working_directory, 0, sizeof(working_directory));
     working_directory[0] = '/';
 #endif
-	return 0;
+    return 0;
 }
 INIT_COMPONENT_EXPORT(dfs_init);
 

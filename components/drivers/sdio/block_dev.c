@@ -101,7 +101,7 @@ struct mmcsd_blk_device
         return -RT_ERROR;
 
     return blocks;
-	}*/ //PEACE 2016年9月6日 21:50:44
+    }*/ //PEACE 2016年9月6日 21:50:44
 
 static rt_err_t rt_mmcsd_req_blk(struct rt_mmcsd_card *card,
                                  rt_uint32_t           sector,
@@ -109,7 +109,7 @@ static rt_err_t rt_mmcsd_req_blk(struct rt_mmcsd_card *card,
                                  rt_size_t             blks,
                                  rt_uint8_t            dir)
 {
-	//    void *aligned_buf; //PEACE 2016年9月6日 21:49:51
+    //    void *aligned_buf; //PEACE 2016年9月6日 21:49:51
    
     struct rt_mmcsd_cmd  cmd, stop;
     struct rt_mmcsd_data  data;
@@ -430,9 +430,9 @@ rt_int32_t rt_mmcsd_blk_probe(struct rt_mmcsd_card *card)
 #ifdef RT_USING_DFS_MNTTABLE
             if (0) // if (blk_dev)
             {
-            	rt_kprintf("try to mount file system!\n");
-            	/* try to mount file system on this block device */
-            	dfs_mount_device(&(blk_dev->dev));
+                rt_kprintf("try to mount file system!\n");
+                /* try to mount file system on this block device */
+                dfs_mount_device(&(blk_dev->dev));
             }
 #endif
         }
@@ -459,12 +459,12 @@ void rt_mmcsd_blk_remove(struct rt_mmcsd_card *card)
         blk_dev = (struct mmcsd_blk_device *)rt_list_entry(l, struct mmcsd_blk_device, list);
         if (blk_dev->card == card) 
         {
-        	/* unmount file system */
-        	const char * mounted_path = dfs_filesystem_get_mounted_path(&(blk_dev->dev));
-        	if (mounted_path)
-        	{
-        		dfs_unmount(mounted_path);
-        	}
+            /* unmount file system */
+            const char * mounted_path = dfs_filesystem_get_mounted_path(&(blk_dev->dev));
+            if (mounted_path)
+            {
+                dfs_unmount(mounted_path);
+            }
 
             rt_device_unregister(&blk_dev->dev);
             rt_list_remove(&blk_dev->list);
@@ -481,5 +481,5 @@ void rt_mmcsd_blk_remove(struct rt_mmcsd_card *card)
  */
 void rt_mmcsd_blk_init(void)
 {
-	/* nothing */
+    /* nothing */
 }

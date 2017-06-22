@@ -26,7 +26,6 @@
                     应用到不同的外设头文件请在这里修改即可                        
 ******************************************************************************/
 
-#include "sys.h"
 #include "soft_iic.h"
 
 /******************************************************************************
@@ -43,15 +42,15 @@
 
 typedef struct
 {
-    u8 second;  //秒
-    u8 minute;  //分
-    u8 hour;    //小时
-    u8 week;    //星期
-    u8 date;    //日
-    u8 month;   //月
-    u8 year;    //年
+    uint8_t second;  //秒
+    uint8_t minute;  //分
+    uint8_t hour;    //小时
+    uint8_t week;    //星期
+    uint8_t date;    //日
+    uint8_t month;   //月
+    uint8_t year;    //年
 
-    u8 SQWE;    //频率输出控制寄存器
+    uint8_t SQWE;    //频率输出控制寄存器
 }Time_Typedef;
 
 extern Time_Typedef TimeValue;  //定义时间缓存指针
@@ -60,10 +59,10 @@ extern Time_Typedef TimeValue;  //定义时间缓存指针
                                     参数宏定义                       
 ******************************************************************************/
 
-#define DS1307_Write			0xd0	//写命令
-#define DS1307_Read			0xd1	//读命令，或者用（DS1307_Write + 1）
+#define DS1307_Write            0xd0    //写命令
+#define DS1307_Read            0xd1    //读命令，或者用（DS1307_Write + 1）
 
-#define Clear_Register			0x00	//清除寄存器值填充数据
+#define Clear_Register            0x00    //清除寄存器值填充数据
 
 #define test_data               0x55    //此数据用来检测DS1307是否存在于总线上用，可以改用其他值
 
@@ -147,12 +146,12 @@ extern Time_Typedef TimeValue;  //定义时间缓存指针
                             时间参数屏蔽无效位宏定义                 
 ******************************************************************************/
 
-#define Shield_secondBit			0x7f
-#define Shield_minuteBit			0x7f
-#define Shield_hourBit				0x3f
-#define Shield_weekBit				0x07
-#define Shield_dateBit				0x3f
-#define Shield_monthBit				0x1f	
+#define Shield_secondBit            0x7f
+#define Shield_minuteBit            0x7f
+#define Shield_hourBit                0x3f
+#define Shield_weekBit                0x07
+#define Shield_dateBit                0x3f
+#define Shield_monthBit                0x1f    
 
 /******************************************************************************
                                   参数命令定义                      
@@ -173,17 +172,17 @@ extern Time_Typedef TimeValue;  //定义时间缓存指针
 #define SQWE_Disable                (0<<4)  //关闭频率输出
 #define SQWE_Enable                 (1<<4)  //打开频率输出
 
-#define CLKOUT_f1                   0x00	//输出1Hz
-#define CLKOUT_f4096                0x01	//输出4.096KHz
-#define CLKOUT_f8192                0x02	//输出8.192KHz
-#define CLKOUT_f32768               0x03	//输出32.768KHz
+#define CLKOUT_f1                   0x00    //输出1Hz
+#define CLKOUT_f4096                0x01    //输出4.096KHz
+#define CLKOUT_f8192                0x02    //输出8.192KHz
+#define CLKOUT_f32768               0x03    //输出32.768KHz
 
 //DS1338 and DS1338Z芯片的频率输出寄存器控制位
 
-#if Chip_Type==0	//没定义则使用的是DS1338或者DS1338Z芯片
+#if Chip_Type==0    //没定义则使用的是DS1338或者DS1338Z芯片
 
-	#define OSF_Disable                 (1<<5)  //停止晶振
-	#define OSF_Enable                  (0<<5)  //启动晶振
+    #define OSF_Disable                 (1<<5)  //停止晶振
+    #define OSF_Enable                  (0<<5)  //启动晶振
 
 #endif
 
@@ -193,19 +192,19 @@ extern Time_Typedef TimeValue;  //定义时间缓存指针
 
 void DS1307_Time_Init(Time_Typedef *TimeVAL);  //时间日历初始化
 
-void DS1307_Write_Byte(u8 REG_ADD,u8 dat);  //DS1307某寄存器写入一个字节数据
+void DS1307_Write_Byte(uint8_t REG_ADD,uint8_t dat);  //DS1307某寄存器写入一个字节数据
 
-u8 DS1307_Read_Byte(u8 REG_ADD);    //DS1307某寄存器读取一个字节数据
+uint8_t DS1307_Read_Byte(uint8_t REG_ADD);    //DS1307某寄存器读取一个字节数据
 
-void DS1307_Operate_Register(u8 REG_ADD,u8 *pBuff,u8 num,u8 mode);  //DS1307对时间日历寄存器操作，写入数据或者读取数据
+void DS1307_Operate_Register(uint8_t REG_ADD,uint8_t *pBuff,uint8_t num,uint8_t mode);  //DS1307对时间日历寄存器操作，写入数据或者读取数据
 
-void DS1307_ReadWrite_Time(u8 mode);    //DS1307读取或者写入时间信息
+void DS1307_ReadWrite_Time(uint8_t mode);    //DS1307读取或者写入时间信息
 
-u8 DS1307_Check(void);  //DS1307测试好坏
+uint8_t DS1307_Check(void);  //DS1307测试好坏
 
-void DS1307_RAM_Write_Data(u8* pBuff,u8 WRadd,u8 num);  //DS1307内置的RAM写数据操作
+void DS1307_RAM_Write_Data(uint8_t* pBuff,uint8_t WRadd,uint8_t num);  //DS1307内置的RAM写数据操作
 
-void DS1307_RAM_Read_Data(u8* pBuff,u8 WRadd,u8 num);   //DS1307内置的RAM读数据操作
+void DS1307_RAM_Read_Data(uint8_t* pBuff,uint8_t WRadd,uint8_t num);   //DS1307内置的RAM读数据操作
 
 #endif  /* end ds1307.h */
 

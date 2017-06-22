@@ -23,14 +23,14 @@
  *
  * \return 计算结果
  */
-u32 block_crc_calc (u8 p_data[], u32 lenth)
+uint32_t block_crc_calc (uint8_t p_data[], uint32_t lenth)
 {
-	u32 index = 0;
-	
-	CRC_ResetDR(); /* 复位CRC */
-	for(index = 0; index < lenth; index++)
-	{
-		CRC->DR = p_data[index];
-	}
-	return (CRC->DR);
+    uint32_t index = 0;
+    
+    CRC_ResetDR(); /* 复位CRC */
+    for(index = 0; index < lenth; index++)
+    {
+        CRC->DR = p_data[index];
+    }
+    return (CRC->DR);
 }

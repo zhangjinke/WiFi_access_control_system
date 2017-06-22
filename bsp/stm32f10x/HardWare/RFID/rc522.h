@@ -1,7 +1,6 @@
 #ifndef _RC522_H_
-#define _RC522_H_	 
+#define _RC522_H_     
 
-#include "sys.h"
 /////////////////////////////////////////////////////////////////////
 //MF522命令字
 /////////////////////////////////////////////////////////////////////
@@ -106,22 +105,22 @@
 #define     RFU3C                 0x3C   
 #define     RFU3D                 0x3D   
 #define     RFU3E                 0x3E   
-#define     RFU3F		  		  0x3F
+#define     RFU3F                    0x3F
 
 /////////////////////////////////////////////////////////////////////
 //和MF522通讯时返回的错误代码
 /////////////////////////////////////////////////////////////////////
-#define 	MI_OK                 (0)
-#define 	MI_NOTAGERR           (1)
-#define 	MI_ERR                (2)
+#define     MI_OK                 (0)
+#define     MI_NOTAGERR           (1)
+#define     MI_ERR                (2)
 
-#define	SHAQU1		0X01
-#define	KUAI4		0X04
-#define	KUAI7		0X07
-#define	REGCARD		0xa1
-#define	CONSUME		0xa2
-#define READCARD	0xa3
-#define ADDMONEY	0xa4
+#define    SHAQU1        0X01
+#define    KUAI4        0X04
+#define    KUAI7        0X07
+#define    REGCARD        0xa1
+#define    CONSUME        0xa2
+#define READCARD    0xa3
+#define ADDMONEY    0xa4
 
 #define SET_RC522_IN_RST  PGout(8)=1
 #define CLR_RC522_IN_RST  PGout(8)=0
@@ -133,17 +132,17 @@ extern struct rt_spi_device *rt_spi_rc522_device;//RC522设备(当前操作的设备)
 extern struct rt_spi_device *rt_spi_rc522_in_device;//RC522设备(门内)
 extern struct rt_spi_device *rt_spi_rc522_out_device;//RC522设备(门外)
 
-s8 InitRC522(void);
-void ClearBitMask(u8   reg,u8   mask);
-void WriteRawRC(u8   Address, u8   value);
-void SetBitMask(u8   reg,u8   mask);
-char PcdComMF522(u8   Command, 
-                 u8 *pIn , 
-                 u8   InLenByte,
-                 u8 *pOut , 
-                 u8  *pOutLenBit);
-void CalulateCRC(u8 *pIn ,u8   len,u8 *pOut );
-u8 ReadRawRC(u8   Address);
+int8_t InitRC522(void);
+void ClearBitMask(uint8_t   reg,uint8_t   mask);
+void WriteRawRC(uint8_t   Address, uint8_t   value);
+void SetBitMask(uint8_t   reg,uint8_t   mask);
+char PcdComMF522(uint8_t   Command, 
+                 uint8_t *pIn , 
+                 uint8_t   InLenByte,
+                 uint8_t *pOut , 
+                 uint8_t  *pOutLenBit);
+void CalulateCRC(uint8_t *pIn ,uint8_t   len,uint8_t *pOut );
+uint8_t ReadRawRC(uint8_t   Address);
 void PcdAntennaOn(void);
 
 char PcdReset(void);
@@ -158,7 +157,7 @@ char PcdWrite(unsigned char addr,unsigned char *pData);
 char PcdRead(unsigned char addr,unsigned char *pData);
 char PcdHalt(void);
 void Reset_RC522(void);
-s8 ReadID(u32* card_id);
+int8_t ReadID(uint32_t* card_id);
 #endif
 
 

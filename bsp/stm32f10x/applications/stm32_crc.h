@@ -15,7 +15,7 @@
 #ifndef _STM32_CRC_H_
 #define _STM32_CRC_H_
 
-#include <sys.h>
+#include "global.h"
 
 /**
  * \brief 计算CRC
@@ -25,6 +25,6 @@
  *
  * \return 计算结果
  */
-u32 block_crc_calc (u8 p_data[], u32 lenth);
+uint32_t block_crc_calc (uint8_t p_data[], uint32_t lenth);
 
 #endif

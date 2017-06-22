@@ -52,7 +52,7 @@ typedef struct
   uint32_t USART_BaudRate;            /*!< This member configures the USART communication baud rate.
                                            The baud rate is computed using the following formula:
                                             - IntegerDivider = ((PCLKx) / (16 * (USART_InitStruct->USART_BaudRate)))
-                                            - FractionalDivider = ((IntegerDivider - ((u32) IntegerDivider)) * 16) + 0.5 */
+                                            - FractionalDivider = ((IntegerDivider - ((uint32_t) IntegerDivider)) * 16) + 0.5 */
 
   uint16_t USART_WordLength;          /*!< Specifies the number of data bits transmitted or received in a frame.
                                            This parameter can be a value of @ref USART_Word_Length */

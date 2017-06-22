@@ -124,26 +124,26 @@ struct dfs_filesystem *dfs_filesystem_lookup(const char *path)
  */
 const char* dfs_filesystem_get_mounted_path(struct rt_device* device)
 {
-	const char* path = RT_NULL;
+    const char* path = RT_NULL;
     struct dfs_filesystem *iter;
 
     dfs_lock();
     for (iter = &filesystem_table[0];
             iter < &filesystem_table[DFS_FILESYSTEMS_MAX]; iter++)
     {
-		/* fint the mounted device */
+        /* fint the mounted device */
         if (iter->ops == RT_NULL) continue;
-		else if (iter->dev_id == device) 
-		{
-			path = iter->path;
-			break;
-		}
+        else if (iter->dev_id == device) 
+        {
+            path = iter->path;
+            break;
+        }
     }
 
     /* release filesystem_table lock */
     dfs_unlock();
 
-	return path;
+    return path;
 }
 
 /**
@@ -492,26 +492,26 @@ int dfs_statfs(const char *path, struct statfs *buffer)
 #ifdef RT_USING_DFS_MNTTABLE
 int dfs_mount_table(void)
 {
-	int index = 0;
+    int index = 0;
 
-	while (1)
-	{
-		if (mount_table[index].path == RT_NULL) break;
+    while (1)
+    {
+        if (mount_table[index].path == RT_NULL) break;
 
-		if (dfs_mount(mount_table[index].device_name,
-				mount_table[index].path,
-				mount_table[index].filesystemtype,
-				mount_table[index].rwflag,
-				mount_table[index].data) != 0)
-		{
-			rt_kprintf("mount fs[%s] on %s failed.\n", mount_table[index].filesystemtype,
-				mount_table[index].path);
-			return -RT_ERROR;
-		}
+        if (dfs_mount(mount_table[index].device_name,
+                mount_table[index].path,
+                mount_table[index].filesystemtype,
+                mount_table[index].rwflag,
+                mount_table[index].data) != 0)
+        {
+            rt_kprintf("mount fs[%s] on %s failed.\n", mount_table[index].filesystemtype,
+                mount_table[index].path);
+            return -RT_ERROR;
+        }
 
-		index ++;
-	}
-	return 0;
+        index ++;
+    }
+    return 0;
 }
 INIT_ENV_EXPORT(dfs_mount_table);
 #endif

@@ -11,480 +11,472 @@
 ** 日志:
 2016.09.08  创建本文件
 *********************************************************************************************************/
-#include <rtthread.h>
 #include "p_database.h"
-/* 文件系统相关头文件 */
+
+#include <rtthread.h>
+#include <finsh.h>
 #include <dfs.h>
 #include <dfs_posix.h>
-/* 延时函数 */
-#define rt_thread_delayMs(x) rt_thread_delay(rt_tick_from_millisecond(x))
-/* 设置调试信息打印开关 */
+#include <stdlib.h>
+#include "global.h"
+
+/** \brief 设置调试信息打印开关 */
 #ifdef printDebugInfo
-#define p_printf(fmt,args...) rt_kprintf(fmt, ##args)
+#define p_printf(fmt,args...) rt_kprintf("p_printf: "); rt_kprintf(fmt, ##args)
 #else
 #define p_printf(fmt,args...)
 #endif
 
-/* 用户信息数据库路径 */
+/** \brief 用户信息数据库路径 */
 const char *user_info_database_path = "/member.bin";
 
-/* 只包含用户号、卡号的结构体数组,由卡号排序之后使用2分法搜索 */
-struct card_id_struct card_id_array[MAX_USER_NUM];
+/** \brief 只包含卡号、用户号的结构体数组,由卡号排序之后使用2分法搜索 */
+card_id_user_id_link_t g_card_id_user_id_list[MAX_USER_NUM];
 
-/*******************************************************************************
-* 函数名 	: bin_search
-* 描述   	: 对分搜索
-* 输入     	: - sSource: 由小到大排序好的数组 - array_size: 数组大小 - key:目标数值
-* 输出     	: None
-* 返回值    : -1: 未搜索到 其它: 数据所在数组的下标
-*******************************************************************************/
-int bin_search (struct card_id_struct sSource[], int array_size, int key)  
-{     
-    int low = 0, high = array_size - 1, mid;  
-      
-    while (low <= high)  
-    {         
-        mid = (low + high) / 2;//获取中间的位置  
-          
-        if (sSource[mid].card_id == key)              
-            return mid; //找到则返回相应的位置  
-        if (sSource[mid].card_id > key)            
-            high = mid - 1; //如果比key大，则往低的位置查找  
-        else  
-            low = mid + 1;  //如果比key小，则往高的位置查找  
-    }     
-    return -1;    
-}
+/** \brief 只包含指纹号、用户号的结构体数组,由指纹号排序之后使用2分法搜索 */
+finger_id_user_id_link_t g_finger_id_user_id_list[MAX_USER_NUM];
 
-/*******************************************************************************
-* 函数名 	: quik_sort
-* 描述   	: 快速排序算法
-* 输入     	: - card_id_array: 需要排序的数组 - low: 数组下边界 - high:数组上边界
-* 输出     	: None
-* 返回值    : None
-*******************************************************************************/
-void quik_sort (struct card_id_struct card_id_array[],int low,int high)
+/**
+ * \brief 卡号-用户号数组二分搜索与快速排序的比较函数(递减)
+ *
+ * \param[in] p_a 成员a
+ * \param[in] p_b 成员b
+ *
+ * \return a大于b返回小于0，a等于b返回0，a小于b返回大于0
+ */
+int card_compar (const void *p_a, const void *p_b)
 {
-	int i = low;
-	int j = high;  
-	struct card_id_struct temp = card_id_array[i]; 
-
-	if (low < high)
-	{
-		while(i < j) 
-		{
-			while((card_id_array[j].card_id >= temp.card_id) && (i < j))
-			{ 
-				j--; 
-			}
-			card_id_array[i] = card_id_array[j];
-			while((card_id_array[i].card_id <= temp.card_id) && (i < j))
-			{
-				i++; 
-			}  
-			card_id_array[j]= card_id_array[i];
-		}
-		card_id_array[i] = temp;
-		quik_sort(card_id_array,low,i-1);
-		quik_sort(card_id_array,j+1,high);
-	}
-	else
-	{
-		return;
-	}
+    if (((card_id_user_id_link_t *)p_a)->card_id > ((card_id_user_id_link_t *)p_b)->card_id) {
+        return -1;
+    } else 
+    if (((card_id_user_id_link_t *)p_a)->card_id < ((card_id_user_id_link_t *)p_b)->card_id) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
+/**
+ * \brief 获取用户数量与最大用户号
+ *
+ * \param[out] p_user_num    用户数量
+ * \param[out] p_max_user_id 最大用户号
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t user_num_get (uint16_t *p_user_num, uint16_t *p_max_user_id)
+{
+    int fd = 0;
+    struct stat file_info;
+    uint16_t user_id = 0;
+    uint16_t user_num = 0;
+    uint16_t max_user_num = 0;
+    uint32_t i = 0;
+    uint32_t addr = 0;
+    
+    /* 获取文件信息 */
+    if (stat(user_info_database_path, &file_info) < 0) {
+        p_printf("stat %s failed\r\n", user_info_database_path);
+        return -1;
+    }
+    
+    /* 打开人员信息数据库 */
+    fd = open(user_info_database_path, O_RDWR | O_CREAT, 0);
+    if (fd < 0) {
+        p_printf("open %s failed\r\n", user_info_database_path);
+        close(fd);
+        return -1;
+    }
+    
+    /* 搜索计算用户数与最大用户号 */
+    for (i = 0; i < (file_info.st_size - HEADER_SIZE) / sizeof(user_info_t); i++) {
+        addr = (sizeof(user_info_t) * i) + HEADER_SIZE;
+
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, addr, SEEK_SET) == -1) {
+            p_printf("lseek addr %d %s failed\r\n", addr, user_info_database_path);
+            goto failed;
+        } 
+
+        /* 获取用户号 */
+        if (read(fd, &user_id, 2) != 2)
+        {
+            p_printf("read %s failed\r\n", user_info_database_path);
+            goto failed;
+        }
+        
+        if (user_id != 0) {
+            user_num++;
+            if (user_id > max_user_num) {
+                max_user_num = user_id;
+            }
+        }
+    }
+    
+    if (RT_NULL != p_user_num) {
+        *p_user_num = user_num;
+    }
+    if (RT_NULL != p_max_user_id) {
+        *p_max_user_id = max_user_num;
+    }
+
+    close(fd);
+    return 0;
+
+failed:
+    close(fd);
+    return -1;
+}
+FINSH_FUNCTION_EXPORT_ALIAS(user_num_get, user_num_get, user_num_get)
+
 /*******************************************************************************
-* 函数名 	: get_set_user_num
-* 描述   	: 获取/设置数据库中的用户信息数量
-* 输入     	: - user_num: 人员总数 - cmd: 0: 获取人员总数 1: 设置人员总数
-* 输出     	: None
+* 函数名     : add_del_get_one_user
+* 描述       : 添加/删除/获取数据库中的一个用户(需要设置one_user_info->user_id参数)
+* 输入         : - one_user_info: 人员信息结构体 - cmd: 0: 添加 1: 删除 2: 获取
+* 输出         : None
 * 返回值    : -1: 失败 0: 成功
 *******************************************************************************/
-s8 get_set_user_num(u16 *user_num, u8 cmd)
+int8_t add_del_get_one_user (user_info_t *one_user_info, uint8_t cmd)
 {
-	int fd;
-	/* 打开人员信息数据库 */
-	fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		p_printf("open %s failed\r\n", user_info_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, 0, SEEK_SET) == -1)
-		{
-			p_printf("lseek %s failed\r\n", user_info_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			if (cmd == 0)
-			{
-				/* 获取人员总数 */
-				if (read(fd, user_num, 2) != 2)
-				{
-					p_printf("read %s failed\r\n", user_info_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					p_printf("get user num %d success\r\n", *user_num);			
-				}		
-			}
-			else if (cmd == 1)
-			{
-				/* 写入人员总数 */
-				if (write(fd, user_num, 2) != 2)
-				{
-					p_printf("write %s failed\r\n", user_info_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					p_printf("set user num %d success\r\n", *user_num);			
-				}		
-			}
-			else
-			{
-				close(fd);
-				p_printf("set user num cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	
-	return 0;
+    int fd;
+
+    /* 打开人员信息数据库 */
+    fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
+    if (fd < 0)
+    {
+        p_printf("open %s failed\r\n", user_info_database_path);
+        close(fd);
+        return -1;
+    }
+    else
+    {
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, (sizeof(user_info_t)*(one_user_info->user_id-1)) + HEADER_SIZE, SEEK_SET) == -1)
+        {
+            p_printf("lseek %s failed\r\n", user_info_database_path);
+            close(fd);
+            return -1;
+        }
+        else
+        {
+            switch(cmd)
+            {
+                
+                /* 添加用户 */
+                case 0:
+                {
+                    /* 写入用户信息 */
+                    if (write(fd, one_user_info, sizeof(user_info_t)) != sizeof(user_info_t))
+                    {
+                        p_printf("write %s failed\r\n", user_info_database_path);
+                        close(fd);
+                        return -1;
+                    }
+                    else
+                    {
+                        close(fd);
+                        p_printf("add user %d success\r\n", one_user_info->user_id);            
+                    }
+                }    break;
+                
+                /* 删除用户 */
+                case 1:
+                {
+                    /* 写入用户信息 */
+                    rt_memset(one_user_info, 0,sizeof(user_info_t));//将用户信息清零
+                    if (write(fd, one_user_info, sizeof(user_info_t)) != sizeof(user_info_t))
+                    {
+                        p_printf("write %s failed\r\n", user_info_database_path);
+                        close(fd);
+                        return -1;
+                    }
+                    else
+                    {
+                        close(fd);
+                        p_printf("del user %d success\r\n", one_user_info->user_id);            
+                    }
+                }    break;
+                
+                /* 读取用户信息 */
+                case 2:
+                {
+                    /* 读取用户信息 */
+                    if (read(fd, one_user_info, sizeof(user_info_t)) != sizeof(user_info_t))
+                    {
+                        p_printf("read %s failed\r\n", user_info_database_path);
+                        close(fd);
+                        return -1;
+                    }
+                    else
+                    {
+                        close(fd);
+                        p_printf("get user %d success\r\n", one_user_info->user_id);            
+                    }
+                }    break;
+                
+                default :
+                {
+                    close(fd);
+                    p_printf("add_del_get one user cmd unknown\r\n");                    
+                    return -1;
+                }
+            }
+        }
+    }
+    
+    return 0;
 }
 
-/*******************************************************************************
-* 函数名 	: get_set_user_num
-* 描述   	: 获取/设置数据库中的最大用户号
-* 输入     	: - user_num: 人员总数 - cmd: 0: 获取最大用户号 1: 设置最大用户号
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_user_num_max(u16 *user_num_max, u8 cmd)
+/**
+ * \brief 获取指定条数用户CRC
+ *
+ * \param[out] crc       获取到的用户crc
+ * \param[out] p_num_get 获取到的用户crc条数
+ * \param[in]  start     起始用户号
+ * \param[in]  num       待获取的条数
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t user_crc_get (uint32_t crc[], uint16_t *p_num_get, uint16_t start, uint16_t num)
 {
-	int fd;
-	/* 打开人员信息数据库 */
-	fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		p_printf("open %s failed\r\n", user_info_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, 2, SEEK_SET) == -1)
-		{
-			p_printf("lseek %s failed\r\n", user_info_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			if (cmd == 0)
-			{
-				/* 获取最大用户号 */
-				if (read(fd, user_num_max, 2) != 2)
-				{
-					p_printf("read %s failed\r\n", user_info_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					p_printf("get user num max %d success\r\n", *user_num_max);			
-				}		
-			}
-			else if (cmd == 1)
-			{
-				/* 写入最大用户号 */
-				if (write(fd, user_num_max, 2) != 2)
-				{
-					p_printf("write %s failed\r\n", user_info_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					close(fd);
-					p_printf("set user num max %d success\r\n", *user_num_max);			
-				}		
-			}
-			else
-			{
-				close(fd);
-				p_printf("set user num max cmd unknown\r\n");
-				return -1;
-			}
-		}
-	}
-	
-	return 0;
+    int fd;
+    
+    uint16_t user_num     = 0;
+    uint16_t user_id_max  = 0;
+    
+    uint32_t i         = 0;
+    uint32_t addr      = 0;
+    uint32_t get_count = 0;
+    
+    /* 获取用户数量与最大用户号 */
+    if (user_num_get(&user_num, &user_id_max) != 0) {
+        p_printf("user_num_get failed\r\n");
+        return -1;
+    }
+    
+    if (start > user_id_max) {
+        p_printf("start > user_id_max\r\n");
+        if (RT_NULL != p_num_get) {
+            *p_num_get = 0;
+        }
+        return 0;
+    } else if (start == 0) {
+        p_printf("start == 0\r\n");
+        return -1;
+    } else if (start + num > user_id_max) {
+        num = user_id_max - start + 1;
+    }
+        
+    /* 打开人员信息数据库 */
+    fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
+    if (fd < 0)
+    {
+        p_printf("open %s failed\r\n", user_info_database_path);
+        return -1;
+    }
+
+    /* 获取用户crc */
+    for (i = start; i < start + num; i++) {
+        
+        /* 计算文件偏移 */
+        addr = (sizeof(user_info_t) * (i - 1)) + OFFSET(user_info,crc) + HEADER_SIZE;
+        
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, addr, SEEK_SET) == -1) {
+            p_printf("lseek %s failed\r\n", user_info_database_path);
+            goto failed;
+        }
+
+        /* 读取用户信息 */
+        if (read(fd, &crc[get_count], 4) != 4) {
+            p_printf("read %s failed\r\n", user_info_database_path);
+            goto failed;
+        }
+        get_count++;
+    }
+    
+    if (RT_NULL != p_num_get) {
+        *p_num_get = get_count;
+    }
+            
+    close(fd);
+    return 0;
+    
+failed:
+    close(fd);
+    return -1;
 }
 
+void crc_test(uint16_t start, uint16_t num)
+{
+    uint32_t crc[20];
+    uint16_t num_get;
+//    uint16_t start = 1;
+//    uint16_t num = 100;
+    
+    if (user_crc_get(crc, &num_get, start, num) != 0)
+    {
+        rt_kprintf("user_crc_get failed\r\n");
+    } else {
+        rt_kprintf("num_get %d\r\n", num_get);
+        for (int i = 0; i < num_get; i++) {
+            rt_kprintf("%08X ", crc[i]);
+        }
+        rt_kprintf("\r\n");
+    }
+}
+FINSH_FUNCTION_EXPORT_ALIAS(crc_test, crc_test, crc_test)
+
 /*******************************************************************************
-* 函数名 	: add_del_get_one_user
-* 描述   	: 添加/删除/获取数据库中的一个用户(需要设置one_user_info->user_id参数)
-* 输入     	: - one_user_info: 人员信息结构体 - cmd: 0: 添加 1: 删除 2: 获取
-* 输出     	: None
+* 函数名     : get_set_state
+* 描述       : 获取/设置指定用户的进出状态
+* 输入         : - state: 状态 - user_id: 用户号 - cmd: 0: 获取状态 1: 设置状态
+* 输出         : None
 * 返回值    : -1: 失败 0: 成功
 *******************************************************************************/
-s8 add_del_get_one_user (struct user_info *one_user_info, u8 cmd)
+int8_t get_set_state(uint8_t *state, uint16_t user_id, uint8_t cmd)
 {
-	int fd;
+    int fd;
 
-	/* 打开人员信息数据库 */
-	fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		p_printf("open %s failed\r\n", user_info_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, (sizeof(struct user_info)*(one_user_info->user_id-1)) + HEADER_SIZE, SEEK_SET) == -1)
-		{
-			p_printf("lseek %s failed\r\n", user_info_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			switch(cmd)
-			{
-				/* 添加用户 */
-				case 0:
-				{
-					/* 写入用户信息 */
-					if (write(fd, one_user_info, sizeof(struct user_info)) != sizeof(struct user_info))
-					{
-						p_printf("write %s failed\r\n", user_info_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						p_printf("add user %d success\r\n", one_user_info->user_id);			
-					}
-				}	break;
-				/* 删除用户 */
-				case 1:
-				{
-					/* 写入用户信息 */
-					rt_memset(one_user_info, 0,sizeof(struct user_info));//将用户信息清零
-					if (write(fd, one_user_info, sizeof(struct user_info)) != sizeof(struct user_info))
-					{
-						p_printf("write %s failed\r\n", user_info_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						p_printf("add user %d success\r\n", one_user_info->user_id);			
-					}
-				}	break;
-				/* 读取用户信息 */
-				case 2:
-				{
-					/* 读取用户信息 */
-					if (read(fd, one_user_info, sizeof(struct user_info)) != sizeof(struct user_info))
-					{
-						p_printf("read %s failed\r\n", user_info_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						p_printf("get user %d success\r\n", one_user_info->user_id);			
-					}
-				}	break;
-				default :
-				{
-					close(fd);
-					p_printf("add_del_get one user cmd unknown\r\n");					
-					return -1;
-				}
-			}
-		}
-	}
-	
-	return 0;
+    /* 打开人员信息数据库 */
+    fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
+    if (fd < 0)
+    {
+        p_printf("open %s failed\r\n", user_info_database_path);
+        close(fd);
+        return -1;
+    }    
+    else
+    {
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, (sizeof(user_info_t)*(user_id-1)) + OFFSET(user_info,state) + HEADER_SIZE, SEEK_SET) == -1)
+        {
+            p_printf("lseek %s failed\r\n", user_info_database_path);
+            close(fd);
+            return -1;
+        }
+        else
+        {
+            switch(cmd)
+            {
+                /* 获取进出状态 */
+                case 0:
+                {
+                    /* 读取进出状态 */
+                    if (read(fd, state, MEMBER_SIZE(user_info,state)) != MEMBER_SIZE(user_info,state))
+                    {
+                        p_printf("read %s failed\r\n", user_info_database_path);
+                        close(fd);
+                        return -1;
+                    }
+                    else
+                    {
+                        close(fd);
+                        p_printf("get state %d success\r\n", user_id);            
+                    }
+                }    break;
+                /* 设置进出状态 */
+                case 1:
+                {
+                    /* 写入进出状态 */
+                    if (write(fd, state, MEMBER_SIZE(user_info,state)) != MEMBER_SIZE(user_info,state))
+                    {
+                        p_printf("write %s failed\r\n", user_info_database_path);
+                        close(fd);
+                        return -1;
+                    }
+                    else
+                    {
+                        close(fd);
+                        p_printf("set state %d success\r\n", user_id);            
+                    }
+                }    break;
+                default :
+                {
+                    close(fd);
+                    p_printf("get set state cmd unknown\r\n");                    
+                    return -1;
+                }
+            }
+        }
+    }
+    
+    return 0;
 }
 
-/*******************************************************************************
-* 函数名 	: get_set_state
-* 描述   	: 获取/设置指定用户的进出状态
-* 输入     	: - state: 状态 - user_id: 用户号 - cmd: 0: 获取状态 1: 设置状态
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 get_set_state(u8 *state, u16 user_id, u8 cmd)
+/**
+ * \brief 初始化卡号-用户号数组
+ *
+ * \param[out] card_array 卡号-用户号数组
+ *
+ * \retval  0 成功
+ * \retval -1 失败
+ */
+int8_t card_array_init(card_id_user_id_link_t card_array[])
 {
-	int fd;
+    int fd;
+    int i;
+    uint16_t user_num;
+    uint16_t max_user_id;
+    uint16_t effective_num = 0;
+    uint32_t addr = 0;
+    
+    /* 获取用户数量与最大用户号 */
+    if(user_num_get(&user_num, &max_user_id) == -1) {
+        p_printf("get user num max failed\r\n");
+        return -1;
+    }
+    
+    p_printf("user_num: %d  max_user_num: %d\r\n", user_num, max_user_id);
 
-	/* 打开人员信息数据库 */
-	fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		p_printf("open %s failed\r\n", user_info_database_path);
-		close(fd);
-		return -1;
-	}	
-	else
-	{
-		/* 移动文件指针到指定位置 */
-		if (lseek(fd, (sizeof(struct user_info)*(user_id-1)) + OFFSET(user_info,state) + HEADER_SIZE, SEEK_SET) == -1)
-		{
-			p_printf("lseek %s failed\r\n", user_info_database_path);
-			close(fd);
-			return -1;
-		}
-		else
-		{
-			switch(cmd)
-			{
-				/* 获取进出状态 */
-				case 0:
-				{
-					/* 读取进出状态 */
-					if (read(fd, state, MEMBER_SIZE(user_info,state)) != MEMBER_SIZE(user_info,state))
-					{
-						p_printf("read %s failed\r\n", user_info_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						p_printf("get state %d success\r\n", user_id);			
-					}
-				}	break;
-				/* 设置进出状态 */
-				case 1:
-				{
-					/* 写入进出状态 */
-					if (write(fd, state, MEMBER_SIZE(user_info,state)) != MEMBER_SIZE(user_info,state))
-					{
-						p_printf("write %s failed\r\n", user_info_database_path);
-						close(fd);
-						return -1;
-					}
-					else
-					{
-						close(fd);
-						p_printf("set state %d success\r\n", user_id);			
-					}
-				}	break;
-				default :
-				{
-					close(fd);
-					p_printf("get set state cmd unknown\r\n");					
-					return -1;
-				}
-			}
-		}
-	}
-	
-	return 0;
-}
+    /* 打开人员信息数据库 */
+    fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
+    if (fd < 0)
+    {
+        p_printf("open %s failed\r\n", user_info_database_path);
+        goto failed;
+    }
 
+    for (i = 1; i <= max_user_id; i++) {
+        
+        addr = (sizeof(user_info_t)*(i-1)) + HEADER_SIZE;
+        p_printf("lseek addr %d\r\n", addr);
 
+        /* 移动文件指针到指定位置 */
+        if (lseek(fd, addr, SEEK_SET) == -1) {
+            p_printf("lseek addr %d %s failed\r\n", addr, user_info_database_path);
+            goto failed;
+        } 
+        
+        /* 读取用户信息 */
+        if (read(fd, (void *)&card_array[effective_num], sizeof(card_id_user_id_link_t)) != sizeof(card_id_user_id_link_t)) {
+            p_printf("read %s failed\r\n", user_info_database_path);
+            goto failed;
+        }
+        
+        if (card_array[effective_num].user_id != 0) {
+            effective_num++;
+            p_printf("%d: get user %d, %08X\r\n", i, card_array[effective_num - 1].user_id, card_array[effective_num - 1].card_id);            
+        }
 
+    }
+    
+    /* 判断用户数量是否正确 */
+    if (effective_num != user_num) {
+        p_printf("init card array failed! user_num is %d  effective_num is %d\r\n", user_num, effective_num);
+        goto failed;
+    }
 
-/*******************************************************************************
-* 函数名 	: init_card_array
-* 描述   	: 初始化卡号结构数组
-* 输入     	: - card_array: 卡号结构数组
-* 输出     	: None
-* 返回值    : -1: 失败 0: 成功
-*******************************************************************************/
-s8 init_card_array(struct card_id_struct card_array[])
-{
-	int fd;
-	int i;
-	u16 user_num,max_user_num;
-	u16 effective_num = 0;
-	
-	if(get_set_user_num(&user_num,GET_USER) == -1)
-	{
-		p_printf("get user num failed\r\n");
-		return -1;
-	}
-	
-	if(get_set_user_num_max(&max_user_num,GET_USER) == -1)
-	{
-		p_printf("get user num max failed\r\n");
-		return -1;
-	}
-	/* 打开人员信息数据库 */
-	fd = open(user_info_database_path, O_RDWR|O_CREAT, 0);
-	if (fd < 0)
-	{
-		p_printf("open %s failed\r\n", user_info_database_path);
-		close(fd);
-		return -1;
-	}
-	else
-	{
-		for (i = 1; i<=max_user_num; i++)
-		{
-			/* 移动文件指针到指定位置 */
-			if (lseek(fd, (sizeof(struct user_info)*(i-1)) + HEADER_SIZE, SEEK_SET) == -1)
-			{
-				p_printf("lseek %s failed\r\n", user_info_database_path);
-				close(fd);
-				return -1;
-			}
-			else
-			{
-				/* 读取用户信息 */
-				if (read(fd, (void *)&card_array[effective_num], sizeof(struct card_id_struct)) != sizeof(struct card_id_struct))
-				{
-					p_printf("read %s failed\r\n", user_info_database_path);
-					close(fd);
-					return -1;
-				}
-				else
-				{
-					if (card_array[effective_num].user_id != 0)
-					{
-						effective_num++;
-					}
-					p_printf("get user %d success\r\n", i);			
-				}
-			}	
-		}
-		/* 判断用户数量是否正确 */
-		if (effective_num != user_num)
-		{
-			p_printf("init card array failed! user_num is %d  effective_num is %d\r\n", user_num, effective_num);
-		}
-		else
-		{
-			/* 使用快速排序算法将数组排序 */
-			quik_sort(card_array, 0, user_num - 1);
-		}
-	}
-	
-	close(fd);
-	return 0;
+    /* 使用快速排序算法将数组排序 */    
+    qsort(card_array, MAX_USER_NUM, sizeof(card_id_user_id_link_t), card_compar);
+
+    close(fd);
+    return 0;
+    
+failed:
+    close(fd);
+    return -1;
+
 }

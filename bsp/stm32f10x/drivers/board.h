@@ -22,18 +22,18 @@
 
 /* whether use board external SRAM memory */
 // <e>Use external SRAM memory on the board
-// 	<i>Enable External SRAM memory
+//     <i>Enable External SRAM memory
 #define STM32_EXT_SRAM          1
-//	<o>Begin Address of External SRAM
-//		<i>Default: 0x68000000
+//    <o>Begin Address of External SRAM
+//        <i>Default: 0x68000000
 #define STM32_EXT_SRAM_BEGIN    0x60000000 /* the begining address of external SRAM */
-//	<o>End Address of External SRAM
-//		<i>Default: 0x68080000
+//    <o>End Address of External SRAM
+//        <i>Default: 0x68080000
 #define STM32_EXT_SRAM_END      0x60100000 /* the end address of external SRAM */
 // </e>
 
 // <o> Internal SRAM memory size[Kbytes] <8-64>
-//	<i>Default: 64
+//    <i>Default: 64
 #define STM32_SRAM_SIZE         64
 #define STM32_SRAM_END          (0x20000000 + STM32_SRAM_SIZE * 1024)
 
